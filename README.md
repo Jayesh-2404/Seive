@@ -105,6 +105,68 @@ Bug presence in `sample_repo_large/tests_core.py`: t_b1, t_b2, t_b3 all False
 (bugs reproduce, honest baseline). End-to-end LLM fix rate is marked as
 experiment to be conducted, harness hook already in `run_eval.py`.
 
+## Maths Used (plain explanation)
+
+### Tokens and budget
+A token is the unit the LLM bills. With `tiktoken cl100k_base`
+(`sieve/tokenizer.py:7-19`), 1 token is about 4 characters.
+Example: `def login(user):` (18 chars) counts as 4-5 tokens.
+Demo repo totals 1127 tokens. Budget 600 forces filtering.
+Saving formula:
+```
+saving_pct = 100 * (1 - sieve_tokens / full_tokens)
+```
+Example: `100 * (1 - 607 / 1127) = 46.1 percent`.
+Naive trunc also saves `100 * (1 - 600 / 1127) = 46.8 percent`
+but cuts mid-file so the saving is useless.
+
+### BM25 scoring (`sieve/retrieval.py:20-75`)
+For each query word t and file d, with k1 = 1.2, b = 0.75:
+```
+IDF(t) = log(1 + (N - df + 0.5) / (df + 0.5))
+TF_part = tf * (k1 + 1) / (tf + k1 * (1 - b + b * dl / avgdl))
+BM25(d, q) = sum over query words of IDF * TF_part
+```
+N = file count, df = files containing t, tf = count in this file,
+dl = file length, avgdl = mean length.
+Example with N = 18, word `auth` in df = 2 files:
+```
+IDF = log(1 + 16.5 / 2.5) = log(7.6) ~ 2.03
+```
+A file mentioning it 3 times at average length scores
+`3 * 2.2 / (3 + 1.2) ~ 1.57`, contribution `2.03 * 1.57 ~ 3.19`.
+Repeating 10 times does not give 3x. That cap is saturation (k1).
+The b term stops long files winning by length alone.
+
+### Hybrid boosts
+```
+final_score = BM25 + 5.0 exact-symbol + 2.0 import + 1.5 call-graph
+```
+Plus 5 when the query word equals a defined def or class name in that file.
+Plus 2 when it equals an import. Plus 1.5 for 1-hop callees: if a top-3
+file calls f, files defining f get boosted. BM25 here scores roughly 0-10,
+so plus 5 dominates without fully overriding text evidence.
+
+### Recall@k
+```
+Recall@k = len(gold intersect retrieved) / len(gold)
+```
+Gold is files the task needs, retrieved is top-5 sent.
+Example: gold 3 files, retrieved 2 of them gives 2 / 3 ~ 0.67.
+Trunc scores 0.0 because it cuts the concatenated blob and later files
+never appear. Sieve keeps whole files, hence 0.86 on the demo set.
+
+### Budget split (`sieve/allocator.py:24-40`, `sieve/composer.py:16-55`)
+Example bug_fix split on budget 600: symbols 180 + semantic 270 +
+summary 90 + memory 60. Symbols are never cut first. Over ceiling,
+summaries shrink to 70 percent repeatedly, then memory. If repo fits
+in budget times 0.9, bypass returns the full dump.
+
+### Latency
+Wall time around retrieve plus compose, in milliseconds. Local retrieval
+is single-digit ms. LLM calls are seconds plus per-token cost. Spending
+ms locally to halve input tokens is the full trade.
+
 ## What Each File Does
 - `sieve/tokenizer.py`: single token counter used everywhere.
 - `sieve/indexer.py`: repository scanner, call-graph builder.
