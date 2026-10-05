@@ -1,0 +1,18 @@
+{
+ "task": "B2",
+ "q": "Fix cart_total dropping last item in checkout",
+ "system": "trunc",
+ "tokens": {
+  "total": 600
+ },
+ "files": [
+  "<truncated>"
+ ],
+ "gold": [
+  "cart.py",
+  "api.py",
+  "orders.py"
+ ],
+ "recall": 0.0,
+ "prompt_hash": "24906524"
+}

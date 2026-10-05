@@ -1,0 +1,26 @@
+{
+ "task": "S1",
+ "q": "How do notifications send email and sms?",
+ "system": "tfidf",
+ "tokens": {
+  "symbols": 291,
+  "semantic": 183,
+  "summary": 65,
+  "memory": 0,
+  "total": 573
+ },
+ "files": [
+  "services_notify.py",
+  "validators.py",
+  "models.py",
+  "api.py",
+  "app.py"
+ ],
+ "gold": [
+  "services_notify.py",
+  "logger.py",
+  "app.py"
+ ],
+ "recall": 0.67,
+ "prompt_hash": "75803669"
+}

@@ -1,0 +1,26 @@
+{
+ "task": "B3",
+ "q": "Fix cache returning stale expired entries",
+ "system": "sieve-nosym",
+ "tokens": {
+  "symbols": 291,
+  "semantic": 197,
+  "summary": 66,
+  "memory": 0,
+  "total": 588
+ },
+ "files": [
+  "cache.py",
+  "api.py",
+  "tests_core.py",
+  "config.py",
+  "auth.py"
+ ],
+ "gold": [
+  "cache.py",
+  "api.py",
+  "config.py"
+ ],
+ "recall": 1.0,
+ "prompt_hash": "51961668"
+}

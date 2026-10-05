@@ -1,0 +1,26 @@
+{
+ "task": "F1",
+ "q": "Add logout endpoint removing user from Session",
+ "system": "tfidf",
+ "tokens": {
+  "symbols": 291,
+  "semantic": 363,
+  "summary": 0,
+  "memory": 0,
+  "total": 687
+ },
+ "files": [
+  "auth.py",
+  "models.py",
+  "middleware.py",
+  "api.py",
+  "services_search.py"
+ ],
+ "gold": [
+  "auth.py",
+  "api.py",
+  "middleware.py"
+ ],
+ "recall": 1.0,
+ "prompt_hash": "28293969"
+}

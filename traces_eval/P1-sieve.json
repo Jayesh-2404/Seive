@@ -1,0 +1,26 @@
+{
+ "task": "P1",
+ "q": "Investigate slow checkout, suspect N+1 in list_orders",
+ "system": "sieve",
+ "tokens": {
+  "symbols": 291,
+  "semantic": 206,
+  "summary": 62,
+  "memory": 0,
+  "total": 598
+ },
+ "files": [
+  "db.py",
+  "reports.py",
+  "utils.py",
+  "payments.py",
+  "app.py"
+ ],
+ "gold": [
+  "db.py",
+  "orders.py",
+  "reports.py"
+ ],
+ "recall": 0.67,
+ "prompt_hash": "1033898"
+}

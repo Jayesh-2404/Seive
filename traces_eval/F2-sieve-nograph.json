@@ -1,0 +1,26 @@
+{
+ "task": "F2",
+ "q": "Add refund flow using payments gateway",
+ "system": "sieve-nograph",
+ "tokens": {
+  "symbols": 291,
+  "semantic": 270,
+  "summary": 4,
+  "memory": 0,
+  "total": 598
+ },
+ "files": [
+  "payments.py",
+  "orders.py",
+  "api.py",
+  "app.py",
+  "auth.py"
+ ],
+ "gold": [
+  "payments.py",
+  "orders.py",
+  "db.py"
+ ],
+ "recall": 0.67,
+ "prompt_hash": "46777319"
+}

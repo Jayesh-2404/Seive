@@ -1,0 +1,26 @@
+{
+ "task": "Q1",
+ "q": "Where is auth validated? What calls check_auth?",
+ "system": "sieve-nograph",
+ "tokens": {
+  "symbols": 291,
+  "semantic": 141,
+  "summary": 130,
+  "memory": 0,
+  "total": 598
+ },
+ "files": [
+  "auth.py",
+  "tests_core.py",
+  "api.py",
+  "middleware.py",
+  "db.py"
+ ],
+ "gold": [
+  "auth.py",
+  "api.py",
+  "middleware.py"
+ ],
+ "recall": 1.0,
+ "prompt_hash": "45081725"
+}

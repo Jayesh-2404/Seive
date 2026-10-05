@@ -1,0 +1,18 @@
+{
+ "task": "Q3",
+ "q": "Where are orders listed and revenue computed?",
+ "system": "trunc",
+ "tokens": {
+  "total": 600
+ },
+ "files": [
+  "<truncated>"
+ ],
+ "gold": [
+  "db.py",
+  "orders.py",
+  "reports.py"
+ ],
+ "recall": 0.0,
+ "prompt_hash": "24906524"
+}

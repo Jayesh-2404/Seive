@@ -1,0 +1,18 @@
+{
+ "task": "B1",
+ "q": "Fix KeyError in check_auth when token is missing",
+ "system": "trunc",
+ "tokens": {
+  "total": 600
+ },
+ "files": [
+  "<truncated>"
+ ],
+ "gold": [
+  "auth.py",
+  "api.py",
+  "middleware.py"
+ ],
+ "recall": 0.0,
+ "prompt_hash": "24906524"
+}

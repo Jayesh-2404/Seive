@@ -1,0 +1,26 @@
+{
+ "task": "Q3",
+ "q": "Where are orders listed and revenue computed?",
+ "system": "sieve-nograph",
+ "tokens": {
+  "symbols": 291,
+  "semantic": 263,
+  "summary": 11,
+  "memory": 0,
+  "total": 599
+ },
+ "files": [
+  "reports.py",
+  "db.py",
+  "validators.py",
+  "services_search.py",
+  "orders.py"
+ ],
+ "gold": [
+  "db.py",
+  "orders.py",
+  "reports.py"
+ ],
+ "recall": 1.0,
+ "prompt_hash": "71715436"
+}

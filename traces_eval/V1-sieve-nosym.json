@@ -1,0 +1,26 @@
+{
+ "task": "V1",
+ "q": "Validate email and quantity inputs where?",
+ "system": "sieve-nosym",
+ "tokens": {
+  "symbols": 291,
+  "semantic": 278,
+  "summary": 0,
+  "memory": 0,
+  "total": 601
+ },
+ "files": [
+  "validators.py",
+  "db.py",
+  "services_search.py",
+  "models.py",
+  "services_notify.py"
+ ],
+ "gold": [
+  "validators.py",
+  "api.py",
+  "utils.py"
+ ],
+ "recall": 0.33,
+ "prompt_hash": "8502461"
+}

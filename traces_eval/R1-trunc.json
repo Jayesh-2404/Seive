@@ -1,0 +1,18 @@
+{
+ "task": "R1",
+ "q": "Refactor cart module without changing totals",
+ "system": "trunc",
+ "tokens": {
+  "total": 600
+ },
+ "files": [
+  "<truncated>"
+ ],
+ "gold": [
+  "cart.py",
+  "orders.py",
+  "utils.py"
+ ],
+ "recall": 0.0,
+ "prompt_hash": "24906524"
+}

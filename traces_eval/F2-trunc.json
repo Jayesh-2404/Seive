@@ -1,0 +1,18 @@
+{
+ "task": "F2",
+ "q": "Add refund flow using payments gateway",
+ "system": "trunc",
+ "tokens": {
+  "total": 600
+ },
+ "files": [
+  "<truncated>"
+ ],
+ "gold": [
+  "payments.py",
+  "orders.py",
+  "db.py"
+ ],
+ "recall": 0.0,
+ "prompt_hash": "24906524"
+}

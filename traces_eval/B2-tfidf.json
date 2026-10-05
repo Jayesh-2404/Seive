@@ -1,0 +1,26 @@
+{
+ "task": "B2",
+ "q": "Fix cart_total dropping last item in checkout",
+ "system": "tfidf",
+ "tokens": {
+  "symbols": 291,
+  "semantic": 237,
+  "summary": 29,
+  "memory": 0,
+  "total": 593
+ },
+ "files": [
+  "cart.py",
+  "api.py",
+  "orders.py",
+  "tests_core.py",
+  "app.py"
+ ],
+ "gold": [
+  "cart.py",
+  "api.py",
+  "orders.py"
+ ],
+ "recall": 1.0,
+ "prompt_hash": "32310701"
+}

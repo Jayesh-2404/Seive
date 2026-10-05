@@ -1,0 +1,35 @@
+{
+ "trace_id": "d0b3d86a",
+ "query": "Where is auth validated? What calls check_auth?",
+ "task_type": "question",
+ "budget": 2000,
+ "split": {
+  "symbols": 0.25,
+  "semantic": 0.35,
+  "summary": 0.3,
+  "memory": 0.1
+ },
+ "retrieval": [
+  {
+   "file": "auth.py",
+   "score": 7.77
+  },
+  {
+   "file": "api.py",
+   "score": 2.08
+  },
+  {
+   "file": "db.py",
+   "score": 1.39
+  }
+ ],
+ "tokens": {
+  "symbols": 52,
+  "semantic": 197,
+  "summary": 0,
+  "total": 283
+ },
+ "latency_ms": 1,
+ "prompt_hash": "99d3e5c04f7b",
+ "prompt_preview": "QUERY: Where is auth validated? What calls check_auth?\nTASK_TYPE: question\n\n[SYMBOLS]\napi.py:3 handle_request\napi.py:7 add\nauth.py:3 hash_pw\nauth.py:6 check_auth\nauth.py:10 Session\nauth.py:11 __init__\nauth.py:12 login\ndb.py:2 get_user\n\n[RETRIEVED]\n# auth.py\n\"\"\"Auth middleware sample.\"\"\"\nimport hashlib\ndef hash_pw(pw: str) -> str:\n    return hashlib.sha256(pw.encode()).hexdigest()\n\ndef check_auth(token: str, store: dict) -> bool:\n    # BUG: KeyError when token missing\n    return store[token] == \"active\"\n\nclass Session:\n    def __init__(self): self.data = {}\n    def login(self, user): self.data[user] = \"active\"\n\n\n# api.py\n\"\"\"API layer.\"\"\"\nfrom auth import check_auth, Session\ndef handle_request(token, store):\n    if check_auth(token, store): return {\"ok\": True}\n    return {\"ok\": False, \"error\": \"unauthorized\"}\n\ndef add(a, b): return a + b\n\n\n# db.py\n\"\"\"DB helpers.\"\"\"\ndef get_user(uid, conn):\n    cur = conn.cursor()\n    cur.execute(\"SELECT * FROM users WHERE id=?\", (uid,))\n    return cur.fetchone()\n\n\n[SUMMARIES]\n\n"
+}

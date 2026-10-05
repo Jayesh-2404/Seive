@@ -1,0 +1,18 @@
+{
+ "task": "F1",
+ "q": "Add logout endpoint removing user from Session",
+ "system": "trunc",
+ "tokens": {
+  "total": 600
+ },
+ "files": [
+  "<truncated>"
+ ],
+ "gold": [
+  "auth.py",
+  "api.py",
+  "middleware.py"
+ ],
+ "recall": 0.0,
+ "prompt_hash": "24906524"
+}

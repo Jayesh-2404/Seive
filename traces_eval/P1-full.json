@@ -1,0 +1,35 @@
+{
+ "task": "P1",
+ "q": "Investigate slow checkout, suspect N+1 in list_orders",
+ "system": "full",
+ "tokens": {
+  "total": 1127
+ },
+ "files": [
+  "api.py",
+  "app.py",
+  "auth.py",
+  "cache.py",
+  "cart.py",
+  "config.py",
+  "db.py",
+  "logger.py",
+  "middleware.py",
+  "models.py",
+  "orders.py",
+  "payments.py",
+  "reports.py",
+  "services_notify.py",
+  "services_search.py",
+  "tests_core.py",
+  "utils.py",
+  "validators.py"
+ ],
+ "gold": [
+  "db.py",
+  "orders.py",
+  "reports.py"
+ ],
+ "recall": 1.0,
+ "prompt_hash": "53295365"
+}

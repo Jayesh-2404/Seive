@@ -1,0 +1,26 @@
+{
+ "task": "R1",
+ "q": "Refactor cart module without changing totals",
+ "system": "tfidf",
+ "tokens": {
+  "symbols": 291,
+  "semantic": 237,
+  "summary": 32,
+  "memory": 0,
+  "total": 594
+ },
+ "files": [
+  "cart.py",
+  "orders.py",
+  "api.py",
+  "tests_core.py",
+  "auth.py"
+ ],
+ "gold": [
+  "cart.py",
+  "orders.py",
+  "utils.py"
+ ],
+ "recall": 0.67,
+ "prompt_hash": "39345578"
+}

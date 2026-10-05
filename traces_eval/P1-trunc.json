@@ -1,0 +1,18 @@
+{
+ "task": "P1",
+ "q": "Investigate slow checkout, suspect N+1 in list_orders",
+ "system": "trunc",
+ "tokens": {
+  "total": 600
+ },
+ "files": [
+  "<truncated>"
+ ],
+ "gold": [
+  "db.py",
+  "orders.py",
+  "reports.py"
+ ],
+ "recall": 0.0,
+ "prompt_hash": "24906524"
+}

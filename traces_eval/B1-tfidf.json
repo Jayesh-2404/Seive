@@ -1,0 +1,26 @@
+{
+ "task": "B1",
+ "q": "Fix KeyError in check_auth when token is missing",
+ "system": "tfidf",
+ "tokens": {
+  "symbols": 291,
+  "semantic": 272,
+  "summary": 0,
+  "memory": 0,
+  "total": 599
+ },
+ "files": [
+  "auth.py",
+  "tests_core.py",
+  "api.py",
+  "middleware.py",
+  "cart.py"
+ ],
+ "gold": [
+  "auth.py",
+  "api.py",
+  "middleware.py"
+ ],
+ "recall": 1.0,
+ "prompt_hash": "63952603"
+}

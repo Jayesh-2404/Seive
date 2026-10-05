@@ -1,0 +1,18 @@
+{
+ "task": "S1",
+ "q": "How do notifications send email and sms?",
+ "system": "trunc",
+ "tokens": {
+  "total": 600
+ },
+ "files": [
+  "<truncated>"
+ ],
+ "gold": [
+  "services_notify.py",
+  "logger.py",
+  "app.py"
+ ],
+ "recall": 0.0,
+ "prompt_hash": "24906524"
+}

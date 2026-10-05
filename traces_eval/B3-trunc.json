@@ -1,0 +1,18 @@
+{
+ "task": "B3",
+ "q": "Fix cache returning stale expired entries",
+ "system": "trunc",
+ "tokens": {
+  "total": 600
+ },
+ "files": [
+  "<truncated>"
+ ],
+ "gold": [
+  "cache.py",
+  "api.py",
+  "config.py"
+ ],
+ "recall": 0.0,
+ "prompt_hash": "24906524"
+}
