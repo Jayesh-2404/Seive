@@ -1,80 +1,106 @@
-"""Compose final prompt strictly under token ceiling.
+"""Compose the final prompt under a hard token ceiling.
 
-Order (correctness-first): symbols (cut last) -> retrieved top-k ->
-summaries (cut first) -> memory (cut second). If bypass, return full dump.
-Summaries are extractive one-liners (no LLM in v0) that preserve identifiers:
-  'path: defines f,g (N toks) | calls h'
+The cut order protects correctness. Memory drops first, then summaries, then
+the tail of retrieved files, then the tail of symbols. Symbol names are the
+last thing removed because they are the map an agent needs to ask a better
+question.
 """
 from . import tokenizer
+from .config import MEMORY_TURNS, SUMMARY_CALLEES, SUMMARY_FILES
+from .models import Allocation, Layers, RepositoryIndex
 
 MEMORY_HEADER = "[MEMORY]"
 
-def summarize_file(entry, index):
-    syms = [s["symbol"] for s in index["symbols"] if s["file"] == entry["file"]][:8]
-    callees = sorted({e["callee"] for e in index["edges"] if e["file"] == entry["file"]})[:6]
-    return (f'{entry["file"]}: defines {", ".join(syms) or "-"} '
+
+def summarize_file(entry: dict, index: RepositoryIndex) -> str:
+    names = [symbol["symbol"] for symbol in index["symbols"]
+             if symbol["file"] == entry["file"]][:8]
+    callees = sorted({edge["callee"] for edge in index["edges"]
+                      if edge["file"] == entry["file"]})[:SUMMARY_CALLEES]
+    return (f'{entry["file"]}: defines {", ".join(names) or "-"} '
             f'({entry["tokens"]} toks) | calls {", ".join(callees) or "-"}')
 
-def _assemble(query, alloc, sym_text, sem_parts, sum_text, mem_text, with_conf=True):
-    task = alloc["task_type"] + (f" (conf {alloc['confidence']:.2f})" if with_conf else "")
+
+def _assemble(query: str, alloc: Allocation, sym_text: str, sem_parts: list[str],
+              sum_text: str, mem_text: str, with_conf: bool = True) -> str:
+    task = alloc["task_type"] + (
+        f" (conf {alloc['confidence']:.2f})" if with_conf else "")
     return (f"QUERY: {query}\nTASK: {task}\n\n"
             f"[SYMBOLS:{tokenizer.count(sym_text)}t]\n{sym_text}\n\n"
-            f"[RETRIEVED:{tokenizer.count(chr(10).join(sem_parts))}t]\n{chr(10).join(sem_parts)}\n\n"
+            f"[RETRIEVED:{tokenizer.count(chr(10).join(sem_parts))}t]\n"
+            f"{chr(10).join(sem_parts)}\n\n"
             f"[SUMMARIES]\n{sum_text}\n\n{MEMORY_HEADER}\n{mem_text}\n")
 
-def compose(query, index, ranked, alloc, budget, memory_turns=None):
+
+def compose(query: str, index: RepositoryIndex, ranked: list[tuple[float, dict]],
+            alloc: Allocation, budget: int,
+            memory_turns: list[dict] | None = None) -> tuple[str, Layers]:
     if alloc.get("bypass"):
-        file_chunks = [c for c in index["chunks"] if c["kind"] == "file"]
+        file_chunks = [chunk for chunk in index["chunks"] if chunk["kind"] == "file"]
         prompt = f"QUERY: {query}\nMODE: FULL (repo fits budget)\n\n" + "\n\n".join(
-            f"# {c['file']}\n{c['text'][:4000]}" for c in file_chunks)
+            f'# {chunk["file"]}\n{chunk["text"][:4000]}' for chunk in file_chunks)
         return prompt, {"mode": "full_bypass", "total": tokenizer.count(prompt)}
-    toks = alloc["tokens"]
-    picked_files = [c["file"] for _, c in ranked]
-    ordered = [s for s in index["symbols"] if s["file"] in picked_files]
-    ordered += [s for s in index["symbols"] if s["file"] not in picked_files]
-    sym_lines, sym_used = [], 0
-    for s in ordered:
-        line = f'{s["file"]}:{s["line"]} {s["symbol"]}({s["kind"]})'
-        t = tokenizer.count(line) + 1
-        if sym_lines and sym_used + t > toks["symbols"]:
+
+    tokens = alloc["tokens"]
+    picked_files = [chunk["file"] for _, chunk in ranked]
+    ordered = [symbol for symbol in index["symbols"] if symbol["file"] in picked_files]
+    ordered += [symbol for symbol in index["symbols"] if symbol["file"] not in picked_files]
+
+    symbol_lines: list[str] = []
+    symbols_used = 0
+    for symbol in ordered:
+        line = f'{symbol["file"]}:{symbol["line"]} {symbol["symbol"]}({symbol["kind"]})'
+        cost = tokenizer.count(line) + 1
+        if symbol_lines and symbols_used + cost > tokens["symbols"]:
             break
-        sym_lines.append(line)
-        sym_used += t
-    sym_text = "\n".join(sym_lines)
-    sem_parts, used = [], 0
-    for score, c in ranked:
-        t = tokenizer.count(c["text"][:2000])
-        if sem_parts and used + t > toks["semantic"]:
+        symbol_lines.append(line)
+        symbols_used += cost
+    symbol_text = "\n".join(symbol_lines)
+
+    semantic_parts: list[str] = []
+    semantic_used = 0
+    for score, chunk in ranked:
+        cost = tokenizer.count(chunk["text"][:2000])
+        if semantic_parts and semantic_used + cost > tokens["semantic"]:
             break
-        sem_parts.append(f'# {c["file"]} [score={score:.2f}]\n{c["text"][:2000]}')
-        used += t
-    rest = [f for f in index["files"] if f["file"] not in picked_files][:12]
-    sum_text = "\n".join(summarize_file(f, index) for f in rest)
-    sum_text = tokenizer.truncate(sum_text, toks["summary"])
-    mem_text = ""
+        semantic_parts.append(
+            f'# {chunk["file"]} [score={score:.2f}]\n{chunk["text"][:2000]}')
+        semantic_used += cost
+
+    rest = [entry for entry in index["files"]
+            if entry["file"] not in picked_files][:SUMMARY_FILES]
+    summary_text = "\n".join(summarize_file(entry, index) for entry in rest)
+    summary_text = tokenizer.truncate(summary_text, tokens["summary"])
+
+    memory_text = ""
     if memory_turns:
-        mem_text = "\n".join(f"- {m['q'][:120]} -> {m['note'][:160]}"
-                             for m in memory_turns[-2:])
-        mem_text = tokenizer.truncate(mem_text, toks["memory"])
-    prompt = _assemble(query, alloc, sym_text, sem_parts, sum_text, mem_text)
-    # Ceiling is hard. Drop memory, then summaries, then the tail of retrieved
-    # files, then the tail of symbols. Symbols stay longest by design.
+        memory_text = "\n".join(
+            f"- {turn['q'][:120]} -> {turn['note'][:160]}"
+            for turn in memory_turns[-MEMORY_TURNS:])
+        memory_text = tokenizer.truncate(memory_text, tokens["memory"])
+
+    prompt = _assemble(query, alloc, symbol_text, semantic_parts,
+                       summary_text, memory_text)
     while tokenizer.count(prompt) > budget:
-        if mem_text:
-            mem_text = ""
-        elif sum_text:
-            sum_text = ""
-        elif len(sem_parts) > 1:
-            sem_parts.pop()
-        elif len(sym_lines) > 1:
-            sym_lines.pop()
-            sym_text = "\n".join(sym_lines)
+        if memory_text:
+            memory_text = ""
+        elif summary_text:
+            summary_text = ""
+        elif len(semantic_parts) > 1:
+            semantic_parts.pop()
+        elif len(symbol_lines) > 1:
+            symbol_lines.pop()
+            symbol_text = "\n".join(symbol_lines)
         else:
             break
-        prompt = _assemble(query, alloc, sym_text, sem_parts, sum_text, mem_text,
-                           with_conf=False)
-    layers = {"symbols": tokenizer.count(sym_text),
-              "semantic": tokenizer.count(chr(10).join(sem_parts)),
-              "summary": tokenizer.count(sum_text), "memory": tokenizer.count(mem_text),
-              "total": tokenizer.count(prompt)}
+        prompt = _assemble(query, alloc, symbol_text, semantic_parts,
+                           summary_text, memory_text, with_conf=False)
+
+    layers: Layers = {
+        "symbols": tokenizer.count(symbol_text),
+        "semantic": tokenizer.count(chr(10).join(semantic_parts)),
+        "summary": tokenizer.count(summary_text),
+        "memory": tokenizer.count(memory_text),
+        "total": tokenizer.count(prompt),
+    }
     return prompt, layers

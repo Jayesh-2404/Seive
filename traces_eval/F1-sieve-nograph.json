@@ -3,11 +3,11 @@
  "q": "Add logout endpoint removing user from Session",
  "system": "sieve-nograph",
  "tokens": {
-  "symbols": 110,
-  "semantic": 319,
+  "symbols": 102,
+  "semantic": 341,
   "summary": 90,
-  "memory": 1,
-  "total": 555
+  "memory": 0,
+  "total": 578
  },
  "files": [
   "auth.py",
@@ -22,5 +22,6 @@
   "middleware.py"
  ],
  "recall": 1.0,
- "prompt_hash": "8f0ebc2b8d62"
+ "prompt_hash": "e21dbc984bb3",
+ "tokenizer": "tiktoken/cl100k_base"
 }

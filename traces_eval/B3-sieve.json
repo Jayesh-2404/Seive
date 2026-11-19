@@ -3,11 +3,11 @@
  "q": "Fix cache returning stale expired entries",
  "system": "sieve",
  "tokens": {
-  "symbols": 143,
-  "semantic": 288,
+  "symbols": 130,
+  "semantic": 328,
   "summary": 90,
-  "memory": 1,
-  "total": 555
+  "memory": 0,
+  "total": 594
  },
  "files": [
   "cache.py",
@@ -22,5 +22,6 @@
   "config.py"
  ],
  "recall": 1.0,
- "prompt_hash": "df0b573f03db"
+ "prompt_hash": "fdf452147d41",
+ "tokenizer": "tiktoken/cl100k_base"
 }

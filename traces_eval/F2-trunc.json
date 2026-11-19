@@ -14,5 +14,6 @@
   "db.py"
  ],
  "recall": 0.0,
- "prompt_hash": "12d5a8599553"
+ "prompt_hash": "7d42f8bccb39",
+ "tokenizer": "tiktoken/cl100k_base"
 }

@@ -1,6 +1,9 @@
-import tempfile, unittest
+import tempfile
+import unittest
 from pathlib import Path
-from sieve import indexer, retrieval, allocator, composer
+
+from sieve import allocator, composer, retrieval
+from sieve.index import index_repo
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -14,7 +17,7 @@ class IndexerTest(unittest.TestCase):
             (repo / "node_modules").mkdir()
             (repo / "node_modules" / "x.ts").write_text("export function vendored() {}\n")
             (repo / "package-lock.json").write_text("{}")
-            index = indexer.index_repo(repo)
+            index = index_repo(repo)
             names = {s["symbol"] for s in index["symbols"]}
             self.assertIn("buildWorkItems", names)
             self.assertIn("queueView", names)
@@ -23,7 +26,7 @@ class IndexerTest(unittest.TestCase):
             self.assertEqual(len(index["files"]), 2)
 
     def test_python_repo_still_indexes(self):
-        index = indexer.index_repo(ROOT / "sample_repo_large")
+        index = index_repo(ROOT / "sample_repo_large")
         self.assertEqual(len(index["files"]), 18)
         self.assertGreater(len(index["symbols"]), 20)
 
@@ -35,7 +38,7 @@ class RetrievalTest(unittest.TestCase):
 
 class ComposerTest(unittest.TestCase):
     def test_ceiling_is_hard(self):
-        index = indexer.index_repo(ROOT / "sample_repo_large")
+        index = index_repo(ROOT / "sample_repo_large")
         query = "Fix KeyError in check_auth when token is missing"
         for budget in (600, 400, 200):
             alloc = allocator.allocate(query, budget, index["total_tokens"])
@@ -45,7 +48,7 @@ class ComposerTest(unittest.TestCase):
             self.assertEqual(layers["total"], composer.tokenizer.count(prompt))
 
     def test_bypass_returns_full_mode(self):
-        index = indexer.index_repo(ROOT / "sample_repo_large")
+        index = index_repo(ROOT / "sample_repo_large")
         alloc = allocator.allocate("anything", 4000, index["total_tokens"])
         ranked, _ = retrieval.hybrid_retrieve("anything", index, top_k=5)
         prompt, layers = composer.compose("anything", index, ranked, alloc, 4000)

@@ -1,28 +1,28 @@
 {
- "ses-sieve-demo-a": {
-  "id": "ses-sieve-demo-a",
+ "run-a": {
+  "id": "ses-sieve-refactor-a",
   "model": {
    "id": "kimi-k2.7-code",
    "providerID": "opencode-go"
   },
-  "input": 52507,
-  "output": 602,
-  "reasoning": 100,
+  "input": 52508,
+  "output": 460,
+  "reasoning": 666,
   "cache_read": 0,
-  "cache_write": 51407,
+  "cache_write": 51408,
   "cost": 0.0
  },
- "ses-sieve-demo-b": {
-  "id": "ses-sieve-demo-b",
+ "run-b": {
+  "id": "ses-sieve-refactor-b",
   "model": {
    "id": "kimi-k2.7-code",
    "providerID": "opencode-go"
   },
-  "input": 7067,
-  "output": 443,
-  "reasoning": 447,
+  "input": 6926,
+  "output": 653,
+  "reasoning": 583,
   "cache_read": 0,
-  "cache_write": 6241,
+  "cache_write": 6097,
   "cost": 0.0
  }
 }

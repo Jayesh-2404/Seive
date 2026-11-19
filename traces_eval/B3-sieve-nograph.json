@@ -3,11 +3,11 @@
  "q": "Fix cache returning stale expired entries",
  "system": "sieve-nograph",
  "tokens": {
-  "symbols": 143,
-  "semantic": 266,
+  "symbols": 130,
+  "semantic": 300,
   "summary": 90,
-  "memory": 1,
-  "total": 533
+  "memory": 0,
+  "total": 566
  },
  "files": [
   "api.py",
@@ -22,5 +22,6 @@
   "config.py"
  ],
  "recall": 1.0,
- "prompt_hash": "d398cdff596b"
+ "prompt_hash": "7d23b4821575",
+ "tokenizer": "tiktoken/cl100k_base"
 }

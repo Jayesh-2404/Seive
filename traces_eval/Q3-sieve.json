@@ -3,11 +3,11 @@
  "q": "Where are orders listed and revenue computed?",
  "system": "sieve",
  "tokens": {
-  "symbols": 86,
-  "semantic": 297,
+  "symbols": 80,
+  "semantic": 317,
   "summary": 90,
-  "memory": 1,
-  "total": 508
+  "memory": 0,
+  "total": 533
  },
  "files": [
   "reports.py",
@@ -22,5 +22,6 @@
   "reports.py"
  ],
  "recall": 1.0,
- "prompt_hash": "55bed9cf2c84"
+ "prompt_hash": "df89a846d182",
+ "tokenizer": "tiktoken/cl100k_base"
 }

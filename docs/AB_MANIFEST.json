@@ -2,15 +2,16 @@
  "repo": "C:/Users/DELL-1/Documents/project/demo/agent-activity-dashboard",
  "question": "How does GitHub dashboard data become work items in the queue?",
  "budget": 8000,
- "full_tokens": 51194,
- "sieve_tokens": 5642,
- "saving_pct": 89.0,
+ "full_tokens": 49412,
+ "sieve_tokens": 5516,
+ "saving_pct": 88.8,
+ "tokenizer": "tiktoken/cl100k_base",
  "layers": {
-  "symbols": 1167,
-  "semantic": 4082,
-  "summary": 376,
-  "memory": 1,
-  "total": 5666
+  "symbols": 1091,
+  "semantic": 4107,
+  "summary": 291,
+  "memory": 0,
+  "total": 5540
  },
  "alloc": {
   "task_type": "question",
@@ -35,11 +36,11 @@
   "src/hooks/use-activity.ts",
   "src/lib/activity-model.ts",
   "src/lib/github.ts",
-  "src/components/queue-view.tsx",
-  "src/lib/activity-types.ts",
   "src/app/page.tsx",
+  "src/components/queue-view.tsx",
   "src/components/work-item.tsx",
-  "src/components/welcome.tsx"
+  "src/components/welcome.tsx",
+  "src/lib/activity-types.ts"
  ],
  "gold": [
   "src/app/api/github/dashboard/route.ts",

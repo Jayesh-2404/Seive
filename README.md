@@ -14,9 +14,9 @@ Output: prompt under budget + trace of every decision.
 
 Pipeline: index -> retrieve -> allocate -> compose -> log -> evaluate.
 
-1. Index: AST parse of Python files and regex symbol extraction for JS/TS.
-   Extracts functions, classes, imports, caller-callee edges. Per-file and
-   per-function chunks.
+1. Index: AST parse for Python and tree-sitter grammars for TS, JS, C, C++,
+   Go, Java and Rust. Extracts functions, classes, imports and caller-callee
+   edges. Regex is the fallback for grammars that are not installed.
 2. Retrieve: BM25 (k1=1.2, b=0.75) + exact symbol bonus + import bonus +
    1-hop call-graph boost. Returns top-5 files.
 3. Allocate: keyword task classifier (bug_fix, feature, perf, question) +
@@ -26,43 +26,58 @@ Pipeline: index -> retrieve -> allocate -> compose -> log -> evaluate.
 5. Log: JSON trace per run (query, task type, files, scores, tokens per layer,
    latency, prompt hash) + CSV summary.
 
-No ML training, no GPU, no network in v0.4. Embeddings and LLM summarizer
+No ML training, no GPU, no network in v0.5. Embeddings and the LLM summarizer
 are Milestone-2 and plug into the same interfaces.
 
 ## Repository Layout
 ```
+pyproject.toml            package metadata, deps, `sieve` and `sieve-mcp` scripts
 sieve/
-  tokenizer.py    token counting, tiktoken cl100k_base with char/4 fallback
-  indexer.py      ast parse, symbols, chunks, imports, call edges, def_index
-  retrieval.py    BM25 from scratch + symbol/import/graph boosts
-  allocator.py    task classify + budget split + bypass rule
-  composer.py     assemble prompt under ceiling, extractive summaries
-  memory.py       turns.jsonl episodic + notes.md persistent
-  mcp_server.py   stdio JSON-RPC: index, query, get_symbol
+  config.py               budgets, size caps, skip lists
+  models.py               typed records shared by index, composer and server
+  discover.py             file discovery, binary and size guards, skip reasons
+  index.py                builds RepositoryIndex, call graph, def_index
+  tokenizer.py            tiktoken cl100k_base with char/4 fallback
+  allocator.py            task classify + budget split + bypass rule
+  composer.py             prompt under hard ceiling, extractive summaries
+  memory.py               turns.jsonl + notes.md
+  cli.py                  sieve index / query / mcp
+  parse/
+    profiles.py           extension to language mapping
+    python_ast.py         Python AST symbols, imports, calls
+    treesitter.py         tree-sitter symbols for TS, JS, C, C++, Go, Java, Rust
+    regex_fallback.py     coarse fallback for grammars that are not installed
+  retrieval/
+    bm25.py               BM25 from scratch
+    hybrid.py             symbol, import and call-graph boosts
+  server/
+    mcp.py                real MCP server over stdio
 tools/
-  build_large_repo.py   generates 18-file demo repo with 3 known bugs
-  ab_build.py           builds full-context and Sieve-context arms for an A/B
+  build_large_repo.py     generates the 18-file demo repo with 3 known bugs
+  ab_build.py             builds the full-context and Sieve-context A/B arms
 tests/
-  test_sieve.py         indexer, camelCase, ceiling and bypass checks
-run_eval.py             12 tasks x 5 systems, writes results_eval.csv + traces_eval/
-sieve_min_demo.py       legacy 3-file toy, kept for contrast only
-sample_repo_large/      generated demo repo (18 files, ~1052 tokens)
-results_eval.csv        eval output, budget=600
-traces_eval/            one JSON per task-system pair
+  test_sieve.py           ceiling, bypass and Python indexing
+  test_languages.py       six languages, discovery rules, MCP tool registration
+run_eval.py               12 tasks x 5 systems, writes results_eval.csv + traces_eval/
+sample_repo_large/        generated demo repo (18 files, ~1127 tokens)
+results_eval.csv          eval output, budget=600
+traces_eval/              one JSON per task-system pair
 docs/
-  SUBMISSION_30PCT.md   one-page 30 percent summary
-  ARCHITECTURE.md       system diagram and store decisions
-  EVALUATION.md         metrics, ablations, threats
-  DEMO_AB.md            OpenCode A/B demo with provider-billed tokens
-  DEMO_GUIDE.md         five minute terminal demo script
+  SUBMISSION_30PCT.md     one-page 30 percent summary
+  ARCHITECTURE.md         system diagram and store decisions
+  EVALUATION.md           metrics, ablations, threats
+  DEMO_AB.md              OpenCode A/B and MCP demo with real token counts
+  DEMO_GUIDE.md           five minute demo script
 experiments/
-  experiment_plan.md    E01-E05 hypothesis template
+  experiment_plan.md      E01-E05 hypothesis template
 ```
 
 ## Requirements
-Python 3.11+. `tiktoken` is optional, with a char/4 fallback. Everything else
-is standard library. No API key is needed for the retrieval eval. The OpenCode
-A/B needs an OpenCode provider login.
+Python 3.11+. Install with `pip install -e .`. Dependencies are `tiktoken`,
+`tree-sitter`, `tree-sitter-language-pack` and the `mcp` SDK. The token count
+falls back to char/4 if `tiktoken` cannot load, and every trace records which
+backend was used. No API key is needed for the retrieval eval. The OpenCode A/B
+needs an OpenCode provider login.
 
 ## How to Run
 Generate demo repo:
@@ -77,11 +92,12 @@ python run_eval.py 600
 
 Expected output:
 ```
-repo files=18 total_tokens=1052 symbols=37 edges=12
+repo files=18 total_tokens=1127 symbols=37 edges=12
+tokenizer=tiktoken/cl100k_base
 system          avg_tok  avg_recall  saving_vs_full
-full            1068     1.00        --
-trunc            600     0.00        +43.8 percent, destroys info
-sieve            518     0.83        +51.5 percent, keeps gold files
+full               1127     1.00        --
+trunc               600     0.00        +46.8 percent, destroys info
+sieve               548     0.83        +51.4 percent, keeps gold files
 ```
 
 Outputs: `results_eval.csv`, `traces_eval/<task>-<system>.json`.
@@ -92,19 +108,33 @@ traces_eval/B1-sieve.json
 Fields: task, query, system, tokens per layer, files picked, gold files,
 recall, prompt hash, latency.
 
-MCP contract check:
+MCP check. Install the package, then configure the server in the project:
+```jsonc
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "servers": {
+      "sieve": {
+        "type": "local",
+        "command": ["python", "-m", "sieve.mcp_server"],
+        "cwd": "."
+      }
+    }
+  }
+}
 ```
-echo {"id":1,"method":"index","params":{"repo":"sample_repo_large"}} | python -m sieve.mcp_server
-```
+`opencode mcp list` then shows `✓ sieve connected`. OpenCode exposes
+`sieve_index`, `sieve_query` and `sieve_symbol`. The server is also available
+as `sieve-mcp` or `python -m sieve.mcp_server` for any other MCP client.
 
 ## Measured Results (budget=600, 12 tasks, deterministic)
 | system | avg tokens | Recall@5 | note |
 |---|---|---|---|
-| full | 1068 | 1.00 | upper bound, over budget |
+| full | 1127 | 1.00 | upper bound, over budget |
 | trunc | 600 | 0.00 | naive cut loses file boundaries |
-| sieve | 518 | 0.83 | BM25 + symbols + graph |
-| sieve-nosym | 518 | 0.83 | symbols redundant on this repo |
-| sieve-nograph | 519 | 0.83 | no measurable graph lift here |
+| sieve | 548 | 0.83 | BM25 + symbols + graph |
+| sieve-nosym | 548 | 0.83 | symbols redundant on this repo |
+| sieve-nograph | 541 | 0.83 | no measurable graph lift here |
 
 The earlier `tfidf` row is gone. The harness had routed it to the same code
 path as `sieve`, so it measured nothing.
@@ -115,11 +145,14 @@ Same question, same model, no tools, only the attached context differs. Repo is
 
 | arm | context tokens | input tokens | output | answer key |
 |---|---|---|---|---|
-| full repo | 51,194 | 52,507 | 602 | 6 / 6 |
-| Sieve, budget 8000 | 5,642 | 7,067 | 443 | 6 / 6 |
+| full repo | 49,412 | 52,508 | 460 | 6 / 6 |
+| Sieve, budget 8000 | 5,516 | 6,926 | 653 | 6 / 6 |
 
-That is 86.5 percent fewer input tokens at the same answer quality. Numbers come
+That is 86.8 percent fewer input tokens at the same answer quality. Numbers come
 from the OpenCode session database. Details and limits: `docs/DEMO_AB.md`.
+The same repo was also driven through the MCP server, where the agent had no
+filesystem access: one `sieve_index` call and three `sieve_query` calls produced
+the same correct chain.
 
 Bug presence in `sample_repo_large/tests_core.py`: t_b1, t_b2, t_b3 all False
 (bugs reproduce, honest baseline). End-to-end LLM fix rate is marked as
@@ -131,13 +164,13 @@ experiment to be conducted, harness hook already in `run_eval.py`.
 A token is the unit the LLM bills. With `tiktoken cl100k_base`
 (`sieve/tokenizer.py:7-19`), 1 token is about 4 characters.
 Example: `def login(user):` (18 chars) counts as 4-5 tokens.
-Demo repo totals 1052 tokens. Budget 600 forces filtering.
+Demo repo totals 1127 tokens. Budget 600 forces filtering.
 Saving formula:
 ```
 saving_pct = 100 * (1 - sieve_tokens / full_tokens)
 ```
-Example: `100 * (1 - 518 / 1068) = 51.5 percent`.
-Naive trunc also saves `100 * (1 - 600 / 1068) = 43.8 percent`
+Example: `100 * (1 - 548 / 1127) = 51.4 percent`.
+Naive trunc also saves `100 * (1 - 600 / 1127) = 46.8 percent`
 but cuts mid-file so the saving is useless.
 
 ### BM25 scoring (`sieve/retrieval.py:20-75`)
@@ -191,29 +224,34 @@ is single-digit ms. LLM calls are seconds plus per-token cost. Spending
 ms locally to halve input tokens is the full trade.
 
 ## What Each File Does
-- `sieve/tokenizer.py`: single token counter used everywhere.
-- `sieve/indexer.py`: repository scanner, call-graph builder.
-- `sieve/retrieval.py`: ranking algorithm, code-structure boosts.
+- `sieve/config.py`: budgets, size caps and skip rules.
+- `sieve/models.py`: typed records shared by every stage.
+- `sieve/discover.py`: file discovery, binary detection, skip reasons.
+- `sieve/index.py`: builds the repository index, call graph and definition map.
+- `sieve/parse/`: Python AST, tree-sitter for seven more languages, regex fallback.
+- `sieve/retrieval/`: BM25 math and the structure boosts.
 - `sieve/allocator.py`: task routing and budget split.
-- `sieve/composer.py`: prompt assembly with ceiling enforcement.
+- `sieve/composer.py`: prompt assembly with hard ceiling enforcement.
 - `sieve/memory.py`: conversation store stub.
-- `sieve/mcp_server.py`: stdio JSON-RPC `index` / `query` / `get_symbol`.
+- `sieve/server/mcp.py`: real MCP server with `index`, `query`, `symbol`.
+- `sieve/cli.py`: `sieve index`, `sieve query`, `sieve mcp`.
 - `run_eval.py`: baselines, ablations, metrics, traces.
 
 ## Limitations
 - Summaries are extractive one-liners, no LLM compression yet.
 - Allocator is rule-based, learned version needs 500+ logged runs.
-- JS/TS symbols come from regex, not a real parser, so nested declarations can be missed.
-- Single Python repo, 12 tasks, gold labels by authors, plus one TS demo question.
-- No vector DB, no server, no dashboard in v0.4 by design.
-- Tokenizer fallback char/4 used only if tiktoken missing.
+- Tree-sitter grammars come from the language pack. Unknown languages fall back to regex or plain text, so their symbols are coarser.
+- Call edges are extracted for Python only. Other languages get symbols and imports but no graph boost.
+- Single Python repo, 12 tasks, gold labels by authors, plus one TypeScript demo question.
+- No vector DB and no HTTP service in v0.5 by design.
+- Tokenizer fallback char/4 is recorded in every trace when tiktoken cannot load.
 
 ## Next Milestones
 1. LLM summarizer with identifier-preservation check.
 2. LLM fix-rate eval with pinned model, temp=0, cost tracking.
 3. Learned allocator trained on collected logs, leave-one-repo-out test.
 4. Dense embeddings + pgvector + RRF fusion, ablated against BM25.
-5. FastAPI HTTP, Docker, Streamlit dashboard, full MCP SDK.
+5. FastAPI HTTP and Docker for the remote deployment path.
 
 ## Status
-v0.4 vertical slice. See docs/ for architecture, evaluation, and demo guide.
+v0.5 vertical slice. See docs/ for architecture, evaluation, and demo guide.

@@ -3,11 +3,11 @@
  "q": "Fix KeyError in check_auth when token is missing",
  "system": "sieve",
  "tokens": {
-  "symbols": 139,
-  "semantic": 238,
+  "symbols": 128,
+  "semantic": 272,
   "summary": 90,
-  "memory": 1,
-  "total": 503
+  "memory": 0,
+  "total": 539
  },
  "files": [
   "auth.py",
@@ -22,5 +22,6 @@
   "middleware.py"
  ],
  "recall": 1.0,
- "prompt_hash": "1b11c9009989"
+ "prompt_hash": "1ea9ca7d729a",
+ "tokenizer": "tiktoken/cl100k_base"
 }

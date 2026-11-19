@@ -3,11 +3,11 @@
  "q": "Refactor cart module without changing totals",
  "system": "sieve-nosym",
  "tokens": {
-  "symbols": 83,
-  "semantic": 338,
+  "symbols": 72,
+  "semantic": 368,
   "summary": 90,
-  "memory": 1,
-  "total": 545
+  "memory": 0,
+  "total": 576
  },
  "files": [
   "cart.py",
@@ -22,5 +22,6 @@
   "utils.py"
  ],
  "recall": 0.67,
- "prompt_hash": "1cb603791460"
+ "prompt_hash": "c3e17344f3c6",
+ "tokenizer": "tiktoken/cl100k_base"
 }

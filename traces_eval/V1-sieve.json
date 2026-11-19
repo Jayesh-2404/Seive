@@ -3,11 +3,11 @@
  "q": "Validate email and quantity inputs where?",
  "system": "sieve",
  "tokens": {
-  "symbols": 84,
-  "semantic": 297,
+  "symbols": 73,
+  "semantic": 330,
   "summary": 90,
-  "memory": 1,
-  "total": 506
+  "memory": 0,
+  "total": 538
  },
  "files": [
   "validators.py",
@@ -22,5 +22,6 @@
   "utils.py"
  ],
  "recall": 0.33,
- "prompt_hash": "dc8694135908"
+ "prompt_hash": "918711e328ef",
+ "tokenizer": "tiktoken/cl100k_base"
 }

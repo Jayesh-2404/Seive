@@ -3,11 +3,11 @@
  "q": "Investigate slow checkout, suspect N+1 in list_orders",
  "system": "sieve-nosym",
  "tokens": {
-  "symbols": 55,
-  "semantic": 178,
-  "summary": 194,
-  "memory": 1,
-  "total": 464
+  "symbols": 47,
+  "semantic": 206,
+  "summary": 220,
+  "memory": 0,
+  "total": 524
  },
  "files": [
   "reports.py",
@@ -22,5 +22,6 @@
   "reports.py"
  ],
  "recall": 0.67,
- "prompt_hash": "2dd4cd9fbe2e"
+ "prompt_hash": "1dbc47ec20bc",
+ "tokenizer": "tiktoken/cl100k_base"
 }

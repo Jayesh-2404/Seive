@@ -1,34 +1,43 @@
-"""Conversation memory: JSONL episodic store + persistent notes.
+"""Conversation memory. Two tiers, matching the notes plus episode split.
 
-Two tiers (like Claude Code CLAUDE.md + MemGPT):
-  notes.md   - persistent rules the allocator always includes (never auto-deleted)
-  turns.jsonl - episodic (query, retrieved files, outcome, note)
-v0 uses extractive notes (first line of outcome). LLM summarizer plugs in later.
+notes.md survives compaction and holds rules. turns.jsonl holds episodes.
+The LLM summarizer plugs in behind `log`.
 """
 import json
 from pathlib import Path
 
+
 class Memory:
-    def __init__(self, path="memory"):
-        self.dir = Path(path); self.dir.mkdir(parents=True, exist_ok=True)
-        self.turns_f = self.dir / "turns.jsonl"
-        self.notes_f = self.dir / "notes.md"
-        if not self.notes_f.exists():
-            self.notes_f.write_text("# Persistent notes (survive compaction)\n- Prefer exact symbol matches over semantic guesses.\n")
-    def log(self, query, files, success=None, note=""):
-        rec = {"q": query, "files": files, "success": success, "note": note or query[:160]}
-        with open(self.turns_f, "a") as f:
-            f.write(json.dumps(rec) + "\n")
-    def recent(self, n=4):
-        if not self.turns_f.exists():
+    def __init__(self, path: str = "memory") -> None:
+        self.dir = Path(path)
+        self.dir.mkdir(parents=True, exist_ok=True)
+        self.turns_file = self.dir / "turns.jsonl"
+        self.notes_file = self.dir / "notes.md"
+        if not self.notes_file.exists():
+            self.notes_file.write_text(
+                "# Persistent notes (survive compaction)\n"
+                "- Prefer exact symbol matches over semantic guesses.\n",
+                encoding="utf-8",
+            )
+
+    def log(self, query: str, files: list[str], success: bool | None = None,
+            note: str = "") -> None:
+        record = {"q": query, "files": files, "success": success,
+                  "note": note or query[:160]}
+        with self.turns_file.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(record) + "\n")
+
+    def recent(self, n: int = 4) -> list[dict]:
+        if not self.turns_file.exists():
             return []
-        lines = self.turns_f.read_text().strip().split("\n")
-        out = []
-        for ln in lines[-n:]:
+        lines = self.turns_file.read_text(encoding="utf-8").strip().splitlines()
+        turns = []
+        for line in lines[-n:]:
             try:
-                out.append(json.loads(ln))
-            except Exception:
-                pass
-        return out
-    def notes(self):
-        return self.notes_f.read_text()[:1000]
+                turns.append(json.loads(line))
+            except json.JSONDecodeError:
+                continue
+        return turns
+
+    def notes(self) -> str:
+        return self.notes_file.read_text(encoding="utf-8")[:1000]

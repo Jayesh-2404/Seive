@@ -19,8 +19,10 @@ The separate A/B pilot adds one real agent result with provider-billed tokens.
 
 ## Real agent A/B
 Repo `agent-activity-dashboard` at `618610d`, question about the dashboard data flow, model `kimi-k2.7-code`, no tools in either arm.
-Full context 51,194 tokens and 52,507 input tokens. Sieve context 5,642 tokens and 7,067 input tokens. Both scored 6 of 6 on a six-element answer key. That is 86.5% fewer input tokens at parity.
+Full context 49,412 tokens and 52,508 input tokens. Sieve context 5,516 tokens and 6,926 input tokens. Both scored 6 of 6 on a six-element answer key. That is 86.8% fewer input tokens at parity.
 One run per arm, so this is a pilot. See `docs/DEMO_AB.md`.
+
+The product path was tested separately through MCP. With every filesystem tool denied, the agent made one `sieve_index` call and three `sieve_query` calls and produced the same answer chain. Those four steps used 23,442 input tokens and 25,600 cache read, so the totals are not comparable to a one-shot arm.
 
 ## Threats
 Single small Python repo plus one TypeScript demo question. Gold labels by us. The A/B is one run per arm and one model. Mitigation: pre-registered tasks, a written answer key applied to both arms, and a second repository in the next milestone.

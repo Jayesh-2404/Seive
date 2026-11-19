@@ -3,3 +3,7 @@ __pycache__/
 .venv/
 node_modules/
 .next/
+*.egg-info/
+build/
+dist/
+.audit/

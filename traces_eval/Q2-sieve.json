@@ -3,11 +3,11 @@
  "q": "How is checkout total computed? Which files touch prices?",
  "system": "sieve",
  "tokens": {
-  "symbols": 79,
-  "semantic": 358,
+  "symbols": 78,
+  "semantic": 378,
   "summary": 90,
-  "memory": 1,
-  "total": 566
+  "memory": 0,
+  "total": 595
  },
  "files": [
   "api.py",
@@ -22,5 +22,6 @@
   "api.py"
  ],
  "recall": 1.0,
- "prompt_hash": "db197818d27b"
+ "prompt_hash": "02982ee538dc",
+ "tokenizer": "tiktoken/cl100k_base"
 }

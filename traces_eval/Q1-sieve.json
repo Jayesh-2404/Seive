@@ -4,10 +4,10 @@
  "system": "sieve",
  "tokens": {
   "symbols": 78,
-  "semantic": 290,
+  "semantic": 320,
   "summary": 90,
-  "memory": 1,
-  "total": 494
+  "memory": 0,
+  "total": 536
  },
  "files": [
   "tests_core.py",
@@ -22,5 +22,6 @@
   "middleware.py"
  ],
  "recall": 1.0,
- "prompt_hash": "babff799a602"
+ "prompt_hash": "88707680ec45",
+ "tokenizer": "tiktoken/cl100k_base"
 }

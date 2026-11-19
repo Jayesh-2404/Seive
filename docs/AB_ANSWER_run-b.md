@@ -1,22 +1,40 @@
-GitHub dashboard data becomes queue work items through this path:
+Here is the exact path from GitHub dashboard data to the queue work items, based on the attached context.
 
-1. **Fetch and combine data** — `src/hooks/use-activity.ts` `useActivity()`  
-   - Reads selected repository ids from `localStorage`, fetches each repo from `/api/github/dashboard`, and stores the combined `RepositoryResult[]` in `activity.results`.
+### 1. Raw GitHub data is produced by the dashboard API
+- **File:** `src/app/api/github/dashboard/route.ts`
+- It builds per-repository dashboard payloads containing branches, commits, pull requests, check runs, reviews, and deployments.
 
-2. **Build dashboard objects** — `src/app/api/github/dashboard/route.ts` `GET()` and `loadRepository()`  
-   - Calls the GitHub API and local state, returning `RepositoryResult` objects that contain a `DashboardRepository` (branches, pull requests, deployment) plus optional `local` / `localError`.
+### 2. Dashboard data is held as `RepositoryResult[]` in the activity hook
+- **File:** `src/hooks/use-activity.ts`
+- `useActivity()` manages the selected repositories, refresh interval (`REFRESH_MS`), seen-state in `localStorage`, and the array `activity.results` typed as `RepositoryResult[]`.
+- The exact fetch call that invokes the dashboard endpoint is **not shown in the retrieved snippet**, so I can’t name the precise function that performs the HTTP request inside this hook.
 
-3. **Turn repositories into work items** — `src/lib/activity-model.ts` `buildWorkItems()`  
-   - Iterates every `RepositoryResult`.
-   - Maps pull requests by branch, then calls `makeWorkItem(repo, branch, pull)` for each branch.
+### 3. Dashboard repositories are converted into `WorkItem` objects
+- **File:** `src/lib/activity-model.ts`
+- **`buildWorkItems(results: RepositoryResult[]): WorkItem[]`** is the main conversion function.
+  - It iterates over each `RepositoryResult` and extracts `result.repository` of type `DashboardRepository`.
+  - It indexes `repo.pullRequests` by branch name.
+  - For each `ActivityBranch`, it finds the matching `PullRequest` (if any).
+  - It calls **`makeWorkItem(repo, branch, pull)`** to create a `WorkItem`.
+  - Attention is classified by **`inferAttention(pull)`** using `pull.draft`, `pull.reviewState`, and `pull.checkState`.
+- **`sortWorkItems`** orders the items.
+- **`partitionWorkItems(items)`** (used by the view) splits them into `waiting` and `inFlight`.
 
-4. **Compute attention state** — `src/lib/activity-model.ts` `inferAttention()` and `makeWorkItem()`  
-   - `inferAttention()` derives `AttentionState` from the PR’s draft/review/check state.
-   - `makeWorkItem()` sets `needsYou`, `blocked`, `lines`, `files`, and `updatedAt`.
+### 4. The home page derives and summarizes the queue
+- **File:** `src/app/page.tsx`
+- ```ts
+  const workItems = useMemo(() => buildWorkItems(activity.results), [activity.results]);
+  const summary = useMemo(() => summarize(workItems), [workItems]);
+  ```
+- These `workItems` and `summary` are passed into `QueueView`.
 
-5. **Render the queue** — `src/app/page.tsx` `Home()` and `src/components/queue-view.tsx` `QueueView()`  
-   - `Home()` calls `buildWorkItems(activity.results)` and `summarize(workItems)`.
-   - `QueueView()` calls `partitionWorkItems(items)` and renders `src/components/work-item.tsx` `WorkItem()` for each item.
+### 5. The queue view renders the work items
+- **File:** `src/components/queue-view.tsx`
+- Receives `items: WorkItem[]` and calls `partitionWorkItems(items)`.
+- Renders each item via the **`WorkItem`** component in `src/components/work-item.tsx`.
 
-Skipped / not checked: the full fetch/polling implementation inside `useActivity` is truncated in the context, and the GitHub API field mapping inside `loadRepository()` is only partially shown.  
-Risk: if the dashboard route changes the shape of `DashboardRepository` or `PullRequest`, `inferAttention` and `makeWorkItem` may compute wrong attention states or miss branches.
+### Summary of data flow
+`src/app/api/github/dashboard/route.ts` → `useActivity()` in `src/hooks/use-activity.ts` → `buildWorkItems()` in `src/lib/activity-model.ts` → `src/app/page.tsx` → `QueueView` in `src/components/queue-view.tsx` → `WorkItem` in `src/components/work-item.tsx`.
+
+### What is missing
+The retrieved context does not show the exact fetch call inside `use-activity.ts` that requests `src/app/api/github/dashboard/route.ts`, so I cannot name the function that triggers the network request from the hook.

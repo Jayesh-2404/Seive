@@ -7,11 +7,14 @@ so the only variable is the context text.
 Usage:
   python tools/ab_build.py <repo> <out_dir> [budget]
 """
-import json, sys
+import json
+import sys
 from pathlib import Path
 
 sys.path.insert(0, ".")
-from sieve import indexer, retrieval, allocator, composer, tokenizer
+from sieve import allocator, composer, retrieval, tokenizer
+from sieve.discover import discover
+from sieve.index import index_repo
 
 QUESTION = "How does GitHub dashboard data become work items in the queue?"
 GOLD = [
@@ -39,18 +42,15 @@ Do not use tools.
 
 def full_dump(repo: Path) -> str:
     parts = []
-    for p in sorted(repo.rglob("*")):
-        if not p.is_file() or p.suffix not in indexer.CODE_EXTS:
-            continue
-        if any(part in indexer.SKIP_PARTS for part in p.parts) or p.name in indexer.SKIP_FILES:
-            continue
-        parts.append(f"# {p.relative_to(repo).as_posix()}\n"
-                     + p.read_text(encoding="utf-8", errors="ignore"))
+    for path in discover(repo).files:
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        text = text.replace("\r\n", "\n").replace("\r", "\n")
+        parts.append(f"# {path.relative_to(repo).as_posix()}\n{text}")
     return "\n\n".join(parts)
 
 def main(repo_path, out_path, budget=8000):
     repo, out = Path(repo_path), Path(out_path)
-    index = indexer.index_repo(repo)
+    index = index_repo(repo)
     alloc = allocator.allocate(QUESTION, budget, index["total_tokens"])
     ranked, meta = retrieval.hybrid_retrieve(QUESTION, index, top_k=8)
     prompt, layers = composer.compose(QUESTION, index, ranked, alloc, budget)
@@ -71,6 +71,7 @@ def main(repo_path, out_path, budget=8000):
         "full_tokens": tokenizer.count(context_a),
         "sieve_tokens": tokenizer.count(context_b),
         "saving_pct": round(100 * (1 - tokenizer.count(context_b) / tokenizer.count(context_a)), 1),
+        "tokenizer": tokenizer.BACKEND,
         "layers": layers,
         "alloc": alloc,
         "method": meta["method"],

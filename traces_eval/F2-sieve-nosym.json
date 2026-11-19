@@ -3,11 +3,11 @@
  "q": "Add refund flow using payments gateway",
  "system": "sieve-nosym",
  "tokens": {
-  "symbols": 111,
-  "semantic": 276,
+  "symbols": 100,
+  "semantic": 270,
   "summary": 90,
-  "memory": 1,
-  "total": 511
+  "memory": 0,
+  "total": 504
  },
  "files": [
   "payments.py",
@@ -22,5 +22,6 @@
   "db.py"
  ],
  "recall": 0.67,
- "prompt_hash": "97adebe8cfe6"
+ "prompt_hash": "5e7841df8539",
+ "tokenizer": "tiktoken/cl100k_base"
 }

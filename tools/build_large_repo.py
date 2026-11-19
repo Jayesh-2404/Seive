@@ -30,9 +30,10 @@ FILES = {
 }
 
 def build(path="sample_repo_large"):
-    p = Path(path); p.mkdir(parents=True, exist_ok=True)
+    p = Path(path)
+    p.mkdir(parents=True, exist_ok=True)
     for name, src in FILES.items():
-        (p / name).write_text(src)
+        (p / name).write_text(src, encoding="utf-8")
     return p
 
 if __name__ == "__main__":

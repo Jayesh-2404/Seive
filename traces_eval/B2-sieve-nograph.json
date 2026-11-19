@@ -3,11 +3,11 @@
  "q": "Fix cart_total dropping last item in checkout",
  "system": "sieve-nograph",
  "tokens": {
-  "symbols": 138,
-  "semantic": 229,
+  "symbols": 132,
+  "semantic": 237,
   "summary": 90,
-  "memory": 1,
-  "total": 492
+  "memory": 0,
+  "total": 507
  },
  "files": [
   "cart.py",
@@ -22,5 +22,6 @@
   "orders.py"
  ],
  "recall": 1.0,
- "prompt_hash": "d3e360f8ffc6"
+ "prompt_hash": "2bb758fa4f7c",
+ "tokenizer": "tiktoken/cl100k_base"
 }

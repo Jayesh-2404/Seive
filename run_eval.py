@@ -14,10 +14,16 @@ end-to-end LLM fix success = experiment to be conducted (needs API key).
 
 Writes results_eval.csv + traces_eval/*.json
 """
-import json, time, csv, sys, hashlib
+import csv
+import hashlib
+import json
+import sys
+import time
 from pathlib import Path
+
 sys.path.insert(0, ".")
-from sieve import indexer, retrieval, allocator, composer, tokenizer
+from sieve import allocator, composer, retrieval, tokenizer
+from sieve.index import index_repo
 from tools.build_large_repo import build
 
 TASKS = [
@@ -67,14 +73,15 @@ def run_system(name, index, tasks, budget):
         Path(f"traces_eval/{t['id']}-{name}.json").write_text(json.dumps(
             {"task":t["id"],"q":t["q"],"system":name,"tokens":layers,
              "files":files,"gold":t["gold"],"recall":round(rec,2),
-             "prompt_hash": hashlib.sha256(prompt.encode()).hexdigest()[:12]}, indent=1))
+             "prompt_hash": hashlib.sha256(prompt.encode()).hexdigest()[:12],
+             "tokenizer": tokenizer.BACKEND}, indent=1))
     return rows
 
 def main(budget=4000):
     repo = build()
     # ensure clean import of generated repo tests
     sys.path.insert(0, str(repo))
-    index = indexer.index_repo(repo)
+    index = index_repo(repo)
     print(f"repo files={len(index['files'])} total_tokens={index['total_tokens']} symbols={len(index['symbols'])} edges={len(index['edges'])}")
     all_rows = []
     for sys_name in ["full","trunc","sieve","sieve-nosym","sieve-nograph"]:
@@ -82,17 +89,25 @@ def main(budget=4000):
     # functional bug presence (proves tasks are real, not toy pass)
     try:
         import tests_core
-        bugs = {"t_b1_fixed": tests_core.t_b1(), "t_b2_fixed": tests_core.t_b2(), "t_b3_fixed": tests_core.t_b3()}
+        bugs = {
+            "t_b1_fixed": tests_core.t_b1(),
+            "t_b2_fixed": tests_core.t_b2(),
+            "t_b3_fixed": tests_core.t_b3(),
+        }
     except Exception as e:
         bugs = {"error": str(e)}
     print("bug status (False = bug present, honest):", bugs)
     with open("results_eval.csv","w",newline="") as f:
-        w = csv.DictWriter(f, fieldnames=list(all_rows[0].keys())); w.writeheader(); w.writerows(all_rows)
+        writer = csv.DictWriter(f, fieldnames=list(all_rows[0].keys()))
+        writer.writeheader()
+        writer.writerows(all_rows)
     # summary table
     import collections
     summ = collections.defaultdict(list)
-    for r in all_rows: summ[r["system"]].append(r)
-    print(f"\n{'system':14} {'avg_tok':>8} {'avg_recall':>10} {'avg_ms':>7}  saving_vs_full")
+    for row in all_rows:
+        summ[row["system"]].append(row)
+    print(f"\ntokenizer={tokenizer.BACKEND}")
+    print(f"{'system':14} {'avg_tok':>8} {'avg_recall':>10} {'avg_ms':>7}  saving_vs_full")
     full_avg = sum(r["tokens"] for r in summ["full"])/len(summ["full"])
     for s, rs in summ.items():
         avg_t = sum(r["tokens"] for r in rs)/len(rs)
