@@ -72,6 +72,19 @@ Session tokens: input 1,042, output 102, reasoning 1,096, cache read 7,424.
 These totals cover several steps, including tool discovery. Do not compare them
 with a one-shot context arm.
 
+## Command
+
+The repo includes `.opencode/commands/sieve.md`, and the global copy lives at
+`~/.config/opencode/commands/sieve.md`. Run:
+
+```text
+/sieve How does GitHub dashboard data become work items in the queue?
+```
+
+The command expands to the index, query, read and compress workflow. The name is
+`sieve`, not `seive`. If the command list does not show it, type `/sie` and it
+appears after the file is reloaded.
+
 ## Reproduce
 
 ```sh

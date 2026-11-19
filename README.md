@@ -133,6 +133,11 @@ those names. Under the default Code Mode they are grouped as
 `tools.sieve.index` and so on. The server is also available as `sieve-mcp` or
 `python -m sieve.mcp_server` for any other MCP client.
 
+A `/sieve` command is included. Run `/sieve <task>` in OpenCode. It expands to
+the index, query, read and compress workflow above. The project copy is
+`.opencode/commands/sieve.md`; the global copy is
+`~/.config/opencode/commands/sieve.md`. The command name is `sieve`, not `seive`.
+
 ## Measured Results (budget=600, 12 tasks, deterministic)
 | system | avg tokens | Recall@5 | note |
 |---|---|---|---|
