@@ -27,9 +27,9 @@ def handle(req):
             return {"error": "call index first"}
         budget = int(p.get("budget", 600))
         alloc = allocator.allocate(p["q"], budget, idx["total_tokens"])
-        ranked, meta = retrieval.hybrid_retrieve(p["q"], idx, top_k=5)
+        ranked, meta = retrieval.hybrid_retrieve(p["q"], idx, top_k=int(p.get("top_k", 8)))
         prompt, layers = composer.compose(p["q"], idx, ranked, alloc, budget)
-        return {"prompt": prompt[:6000], "layers": layers, "alloc": alloc,
+        return {"prompt": prompt, "layers": layers, "alloc": alloc,
                 "files": [c["file"] for _, c in ranked], "method": meta["method"]}
     if m == "get_symbol":
         idx = INDEX["index"]

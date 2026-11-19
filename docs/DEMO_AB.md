@@ -94,6 +94,21 @@ and is included in the input numbers. `tokens_cache_write` is reported raw
 because the provider caches the prompt and the accounting differs by model.
 Answer quality is judged by us, with the key above written down first.
 
+## MCP check
+
+The same request through the stdio server, on the same repo:
+
+```sh
+printf '%s\n' \
+  '{"id":1,"method":"index","params":{"repo":"<repo>"}}' \
+  '{"id":2,"method":"query","params":{"q":"How does GitHub dashboard data become work items in the queue?","budget":8000}}' \
+  | python -m sieve.mcp_server
+```
+
+It returns 42 files, 268 symbols, 566 edges, and a query result with
+`symbols=1167`, `semantic=4082`, `summary=376`, `total=5666`. The prompt is
+returned in full, not truncated.
+
 ## What to say in the demo
 
 Sieve is not a better model. It is a filter. The agent solved the same task
