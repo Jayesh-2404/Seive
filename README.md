@@ -296,6 +296,9 @@ ms locally to halve input tokens is the full trade.
 3. Learned allocator trained on collected logs, leave-one-repo-out test.
 4. Dense embeddings + pgvector + RRF fusion, ablated against BM25.
 5. FastAPI HTTP and Docker for the remote deployment path.
+6. Automatic OpenCode plugin for tool-output compression.
+
+The full gap analysis is in `docs/REMAINING.md`.
 
 ## Status
 v0.5 vertical slice. See docs/ for architecture, evaluation, and demo guide.
