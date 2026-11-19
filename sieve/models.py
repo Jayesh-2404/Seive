@@ -72,3 +72,27 @@ class Layers(TypedDict, total=False):
     memory: int
     total: int
     mode: str
+
+
+class CompressedText(TypedDict):
+    text: str
+    kind: str
+    tokens_before: int
+    tokens_after: int
+    saved_pct: float
+    changed: bool
+    ref: str | None
+
+
+class ReadResult(TypedDict):
+    file: str
+    symbol: str | None
+    text: str
+    kind: str
+    symbols: list[str]
+    tokens_before: int
+    tokens_after: int
+    saved_pct: float
+    changed: bool
+    ref: str | None
+

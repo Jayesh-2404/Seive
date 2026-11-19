@@ -41,7 +41,10 @@ sieve/
   allocator.py            task classify + budget split + bypass rule
   composer.py             prompt under hard ceiling, extractive summaries
   memory.py               turns.jsonl + notes.md
-  cli.py                  sieve index / query / mcp
+  compress.py             budgeted compression for logs, tests, JSON, CSV
+  read.py                 symbol-aware file reads
+  store.py                original text store and tool event log
+  cli.py                  sieve index / query / read / compress / original / stats / mcp
   parse/
     profiles.py           extension to language mapping
     python_ast.py         Python AST symbols, imports, calls
@@ -51,7 +54,7 @@ sieve/
     bm25.py               BM25 from scratch
     hybrid.py             symbol, import and call-graph boosts
   server/
-    mcp.py                real MCP server over stdio
+    mcp.py                MCP server: index, query, read, compress, original, symbol, stats
 tools/
   build_large_repo.py     generates the 18-file demo repo with 3 known bugs
   ab_build.py             builds the full-context and Sieve-context A/B arms
@@ -124,8 +127,11 @@ MCP check. Install the package, then configure the server in the project:
 }
 ```
 `opencode mcp list` then shows `✓ sieve connected`. OpenCode exposes
-`sieve_index`, `sieve_query` and `sieve_symbol`. The server is also available
-as `sieve-mcp` or `python -m sieve.mcp_server` for any other MCP client.
+`sieve_index`, `sieve_query`, `sieve_read`, `sieve_compress`, `sieve_original`,
+`sieve_symbol` and `sieve_stats`. With `codemode: false` the tools appear with
+those names. Under the default Code Mode they are grouped as
+`tools.sieve.index` and so on. The server is also available as `sieve-mcp` or
+`python -m sieve.mcp_server` for any other MCP client.
 
 ## Measured Results (budget=600, 12 tasks, deterministic)
 | system | avg tokens | Recall@5 | note |
@@ -153,6 +159,22 @@ from the OpenCode session database. Details and limits: `docs/DEMO_AB.md`.
 The same repo was also driven through the MCP server, where the agent had no
 filesystem access: one `sieve_index` call and three `sieve_query` calls produced
 the same correct chain.
+
+## Read less (input compression)
+The repository context is not the only input. Tool output is often larger.
+These are measured calls, not estimates.
+
+| Input | Before | After | Saved |
+|---|---|---|---|
+| `activity-model.ts`, symbol `buildWorkItems` | 1,235 | 313 | 74.7% |
+| noisy log, budget 120 | 571 | 120 | 79.0% |
+| 2,000 line log, budget 300 | 37,016 | 296 | 99.2% |
+
+`sieve_read` returns the file map and the requested symbol. `sieve_compress`
+keeps errors, paths and numbers, and drops repeated or passing lines. Every
+original goes to `~/.sieve/originals` and comes back with `sieve_original`.
+`sieve stats` reports the running total. The 2,000 line log is a synthetic
+fixture, so treat that row as a compression check, not a real repository result.
 
 Bug presence in `sample_repo_large/tests_core.py`: t_b1, t_b2, t_b3 all False
 (bugs reproduce, honest baseline). End-to-end LLM fix rate is marked as
@@ -232,9 +254,12 @@ ms locally to halve input tokens is the full trade.
 - `sieve/retrieval/`: BM25 math and the structure boosts.
 - `sieve/allocator.py`: task routing and budget split.
 - `sieve/composer.py`: prompt assembly with hard ceiling enforcement.
+- `sieve/compress.py`: budgeted compression for noisy tool output.
+- `sieve/read.py`: symbol-aware file reads.
+- `sieve/store.py`: originals and the token event log.
 - `sieve/memory.py`: conversation store stub.
-- `sieve/server/mcp.py`: real MCP server with `index`, `query`, `symbol`.
-- `sieve/cli.py`: `sieve index`, `sieve query`, `sieve mcp`.
+- `sieve/server/mcp.py`: MCP server with `index`, `query`, `read`, `compress`, `original`, `symbol`, `stats`.
+- `sieve/cli.py`: the same operations from a terminal.
 - `run_eval.py`: baselines, ablations, metrics, traces.
 
 ## Limitations

@@ -40,7 +40,7 @@ class ComposerTest(unittest.TestCase):
     def test_ceiling_is_hard(self):
         index = index_repo(ROOT / "sample_repo_large")
         query = "Fix KeyError in check_auth when token is missing"
-        for budget in (600, 400, 200):
+        for budget in (600, 400, 200, 150, 0):
             alloc = allocator.allocate(query, budget, index["total_tokens"])
             ranked, _ = retrieval.hybrid_retrieve(query, index, top_k=5)
             prompt, layers = composer.compose(query, index, ranked, alloc, budget)

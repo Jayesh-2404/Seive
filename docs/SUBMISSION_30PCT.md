@@ -11,11 +11,14 @@ sieve/parse/regex_fallback.py -> fallback when a grammar is not installed
 sieve/retrieval/            -> BM25 (k1=1.2, b=0.75) + symbol/part/import/graph
 sieve/allocator.py          -> keyword router + bypass rule (repo<budget -> full dump)
 sieve/composer.py           -> symbols -> top-k -> extractive summaries, hard ceiling
-sieve/server/mcp.py         -> real MCP server: index / query / symbol
-sieve/cli.py                -> sieve index / query / mcp
+sieve/compress.py           -> budgeted compression for logs, tests, JSON, CSV, HTML
+sieve/read.py               -> symbol-aware file reads
+sieve/store.py              -> original text store and token event log
+sieve/server/mcp.py         -> MCP: index, query, read, compress, original, symbol, stats
+sieve/cli.py                -> the same operations from a terminal
 run_eval.py                 -> 12 tasks x 5 systems, Recall@5 + tokens + latency + traces
 tools/ab_build.py           -> builds the full-context and Sieve arms for an OpenCode A/B
-tests/                      -> 11 tests: ceiling, languages, discovery, MCP tools
+tests/                      -> 29 tests: ceiling, languages, compression, reads, MCP tools
 tools/build_large_repo.py   -> 18-file demo repo with 3 known bugs
 ```
 
@@ -44,14 +47,25 @@ Repo: `agent-activity-dashboard` at commit `618610d`, 42 TS files.
 
 86.8% fewer input tokens at the same answer quality. The same repo was also
 driven through the MCP server with every filesystem tool denied. The agent made
-one `sieve_index` call and three `sieve_query` calls and produced the same
-chain. Details and limits in `docs/DEMO_AB.md`.
+one `sieve_index` call, one `sieve_read` call and one `sieve_compress` call and
+produced the same chain. Details and limits in `docs/DEMO_AB.md`.
+
+### 2c. Read less (input compression)
+| input | before | after | saved |
+|---|---|---|---|
+| `activity-model.ts`, symbol `buildWorkItems` | 1,235 | 313 | 74.7% |
+| noisy log, budget 120 | 571 | 120 | 79.0% |
+| 2,000 line log, budget 300 | 37,016 | 296 | 99.2% |
+
+Every original is kept in `~/.sieve/originals` and comes back with
+`sieve_original`. The 2,000 line log is a synthetic fixture.
 
 ## 3. Algorithms used (not just plumbing)
 1. **Structural extraction**: Python `ast` for accurate symbols and call edges, tree-sitter grammars for TS, JS, C, C++, Go, Java and Rust, regex only as fallback. Extension to language is one table.
 2. **BM25** (Robertson & Jones): TF saturation + length norm + IDF, implemented from scratch.
 3. **Hybrid boost**: exact symbol + symbol-part + import + 1-hop callee. camelCase and snake_case are split before scoring.
 4. **Budget routing**: keyword classifier with word boundaries + per-task split + bypass + hard ceiling. Cut order is memory, summaries, retrieved tail, symbols.
+5. **Budgeted compression**: kind detection, keep errors, paths and counts, collapse repeated lines, pack head and tail to a token budget, keep the original by content hash.
 
 ## 4. What is NOT done (next 70%)
 - LLM summarizer (currently extractive one-liners preserving identifiers)
@@ -67,17 +81,21 @@ pip install -e .
 python tools/build_large_repo.py
 python run_eval.py 600
 python -m pytest -q
+sieve read auth.py --repo sample_repo_large --symbol check_auth --budget 200 --json
+sieve compress noisy.log --budget 300 --json
+sieve stats
 ```
 Outputs: `results_eval.csv`, `traces_eval/<task>-<system>.json`
 
 MCP: add the `sieve` local server to `opencode.json`, run `opencode mcp list`,
-and expect `sieve connected`. OpenCode exposes `sieve_index`, `sieve_query` and
-`sieve_symbol`. The config is in `docs/DEMO_AB.md`.
+and expect `sieve connected`. OpenCode exposes `sieve_index`, `sieve_query`,
+`sieve_read`, `sieve_compress`, `sieve_original`, `sieve_symbol` and
+`sieve_stats`. The config is in `docs/MCP_SESSION.md`.
 
 A/B demo: `python tools/ab_build.py <repo> <out_dir> 8000`, then the two
 `opencode run` commands in `docs/DEMO_AB.md`.
 
 ## 6. Files to print for submission
 - This file, `results_eval.csv`, one `traces_eval/B1-sieve.json`
-- `sieve/retrieval/bm25.py`, `sieve/parse/treesitter.py`, `sieve/server/mcp.py`
-- `docs/DEMO_AB.md`, `docs/AB_ANSWER_run-a.md`, `docs/AB_ANSWER_run-b.md`
+- `sieve/retrieval/bm25.py`, `sieve/parse/treesitter.py`, `sieve/compress.py`, `sieve/server/mcp.py`
+- `docs/DEMO_AB.md`, `docs/MCP_SESSION.md`, `docs/AB_ANSWER_run-a.md`, `docs/AB_ANSWER_run-b.md`

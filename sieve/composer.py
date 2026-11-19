@@ -96,6 +96,12 @@ def compose(query: str, index: RepositoryIndex, ranked: list[tuple[float, dict]]
         prompt = _assemble(query, alloc, symbol_text, semantic_parts,
                            summary_text, memory_text, with_conf=False)
 
+    # The first chunk always enters whole, so a budget below one chunk would
+    # otherwise be exceeded. Ceiling wins here; the layer counts may then sum
+    # higher than total for that degenerate case.
+    if tokenizer.count(prompt) > budget:
+        prompt = tokenizer.truncate(prompt, max(0, budget))
+
     layers: Layers = {
         "symbols": tokenizer.count(symbol_text),
         "semantic": tokenizer.count(chr(10).join(semantic_parts)),
