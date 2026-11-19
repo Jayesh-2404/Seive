@@ -13,14 +13,17 @@ dependencies = [
   "tree-sitter>=0.26",
   "tree-sitter-language-pack>=1.25",
   "mcp>=2.0",
+  "fastapi>=0.165",
+  "uvicorn>=0.54",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=9", "ruff>=0.6", "mypy>=1.10"]
+dev = ["pytest>=9", "ruff>=0.6", "mypy>=1.10", "httpx>=0.28"]
 
 [project.scripts]
 sieve = "sieve.cli:main"
 sieve-mcp = "sieve.server.mcp:main"
+sieve-serve = "sieve.http_server:run"
 
 [tool.setuptools.packages.find]
 include = ["sieve*"]

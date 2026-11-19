@@ -1,0 +1,15 @@
+.git
+.github
+.venv
+__pycache__
+*.pyc
+*.egg-info
+bench
+legacy
+traces_eval
+results_eval.csv
+docs
+tests
+sample_repo_large
+sample_repo
+synopsis_merged*.pdf

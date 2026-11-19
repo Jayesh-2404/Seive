@@ -2,7 +2,7 @@
 
 ## 1. What we built (runnable today)
 ```
-pyproject.toml              -> package metadata, deps, sieve and sieve-mcp entry points
+pyproject.toml              -> package metadata, deps, sieve, sieve-mcp and sieve-serve entry points
 sieve/discover.py           -> repo walk, binary and size guards, skip reasons
 sieve/index.py              -> index build, call graph, def_index
 sieve/parse/python_ast.py   -> Python ast symbols, imports, calls
@@ -16,10 +16,13 @@ sieve/read.py               -> symbol-aware file reads
 sieve/store.py              -> original text store and token event log
 sieve/memory.py             -> persistent notes and recent turns, wired into query
 sieve/server/mcp.py         -> MCP: index, query, read, compress, original, symbol, stats, memory
+sieve/http_server.py        -> FastAPI adapter over the same engine
+Dockerfile                  -> HTTP service image
+.github/workflows/ci.yml    -> lint, tests, eval, HTTP import
 sieve/cli.py                -> the same operations from a terminal
 run_eval.py                 -> 12 tasks x 5 systems, Recall@5 + tokens + latency + traces
 tools/ab_build.py           -> builds the full-context and Sieve arms for an OpenCode A/B
-tests/                      -> 29 tests: ceiling, languages, compression, reads, MCP tools
+tests/                      -> 34 tests: ceiling, languages, compression, reads, HTTP, MCP tools
 tools/build_large_repo.py   -> 18-file demo repo with 3 known bugs
 ```
 
@@ -75,7 +78,8 @@ Every original is kept in `~/.sieve/originals` and comes back with
 ## 4. What is NOT done (next 70%)
 - LLM summarizer (currently extractive one-liners preserving identifiers)
 - Learned allocator (needs >=500 logged runs; the rule ships now)
-- pgvector / embeddings / FastAPI HTTP / Docker (local stdio is the current deployment path)
+- pgvector / embeddings (the HTTP adapter, Dockerfile and CI workflow are present)
+- Docker image build and a remote CI run are not verified on this machine
 - LLM fix-rate eval at scale (A/B pilot run, needs reps and more tasks)
 - Call edges for non-Python languages, so the graph boost is Python-only
 - Conversation compaction (memory is wired, but old turns are not compacted)
@@ -91,7 +95,11 @@ sieve read auth.py --repo sample_repo_large --symbol check_auth --budget 200 --j
 sieve compress noisy.log --budget 300 --json
 sieve memory --note "decision: keep the six-task benchmark"
 sieve stats
+sieve-serve
 ```
+The HTTP service exposes `/health`, `/index`, `/query`, `/read`, `/compress`,
+`/stats` and `/original/{ref}`. A live check returned 18 files for the demo repo
+and a 538 token query under the 600 budget.
 Outputs: `results_eval.csv`, `traces_eval/<task>-<system>.json`
 
 MCP: add the `sieve` local server to `opencode.json`, run `opencode mcp list`,
@@ -104,5 +112,6 @@ A/B demo: `python tools/ab_build.py <repo> <out_dir> 8000`, then the two
 
 ## 6. Files to print for submission
 - This file, `results_eval.csv`, one `traces_eval/B1-sieve.json`
-- `sieve/retrieval/bm25.py`, `sieve/parse/treesitter.py`, `sieve/compress.py`, `sieve/server/mcp.py`
-- `docs/DEMO_AB.md`, `docs/MCP_SESSION.md`, `docs/AB_ANSWER_run-a.md`, `docs/AB_ANSWER_run-b.md`
+- `sieve/retrieval/bm25.py`, `sieve/parse/treesitter.py`, `sieve/compress.py`, `sieve/server/mcp.py`, `sieve/http_server.py`
+- `Dockerfile`, `.github/workflows/ci.yml`
+- `docs/DEMO_AB.md`, `docs/MCP_SESSION.md`, `docs/REAL_BENCH.md`, `docs/AB_ANSWER_run-a.md`, `docs/AB_ANSWER_run-b.md`

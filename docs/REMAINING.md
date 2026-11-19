@@ -11,14 +11,17 @@ runs today. It is a planning document, not a claim.
 | Retrieval eval | full 1127 / 1.00, trunc 600 / 0.00, Sieve 548 / 0.83 | `python run_eval.py 600` |
 | Real agent A/B | 52,508 vs 6,926 input tokens, 86.8% fewer, 6/6 both | `docs/DEMO_AB.md` |
 | Six-task real benchmark | 6/6 both, 52,530 vs 6,869 avg input, 86.9% fewer | `docs/REAL_BENCH.md` |
+| HTTP service | health, 18 files indexed, 538 token query under 600 | live uvicorn check |
 | Input compression | 1,235 to 313, 571 to 120, 37,016 to 296 | `docs/MCP_SESSION.md`, `sieve stats` |
 | MCP | 7 tools, 8 slash commands, live session | `ses-sieve-mcp3`, `opencode mcp list` |
 | Languages | Python, TS, JS, C, C++, Go, Java, Rust | `tests/test_languages.py` |
 
-What is not present in the code: no embeddings, no pgvector, no FastAPI, no
-Docker, no CI, no learned allocator, no LLM summarizer, and no wired memory.
-The `Memory` class has no call site. Tree-sitter files return no call edges.
-Chunks are capped by characters, not tokens.
+What is not present in the code: no embeddings, no pgvector, no learned
+allocator, no LLM summarizer, and no compaction of old turns. The `Memory` class
+is now wired into the MCP query and the `memory` tool. Tree-sitter files return
+no call edges. Chunks are capped by characters, not tokens. FastAPI, the
+Dockerfile and the CI workflow are present; the Docker build and a remote CI run
+were not executed here.
 
 ## Synopsis objectives against the code
 
@@ -32,9 +35,9 @@ Chunks are capped by characters, not tokens.
 | 6 | MCP service | Done | `sieve/server/mcp.py`, 7 tools, 8 commands, `ses-sieve-mcp3` | packaging and installer |
 | 7 | Benchmark of token cost, latency and task success with vs without | Partial, improved | 12-task retrieval eval; 6-task real benchmark with 6/6 both and 86.9% fewer input tokens; one MCP session | harder task set with patches and tests, 3 reps, cost, multi-repo |
 
-The synopsis also promises FastAPI over PostgreSQL/pgvector, a Dockerized stack,
-GitHub Actions, and an allocator that learns from repeated runs. None of those
-are built.
+The synopsis also promises PostgreSQL/pgvector and an allocator that learns from
+repeated runs. Neither is built. FastAPI, the Dockerfile and the CI workflow now
+exist; the Docker build and a remote CI run remain to be verified.
 
 ## P0: required before the thesis is proven
 
@@ -80,6 +83,9 @@ are built.
 8. **FastAPI, Docker and CI.** An HTTP adapter over the same engine, a
    Dockerfile, and a GitHub Actions workflow that runs tests and the eval.
    Acceptance: a green workflow and a container that answers `/query`.
+   Progress: the adapter, Dockerfile and workflow exist. A live uvicorn check
+   answered `/health`, `/index` and `/query`. Docker is not installed here, and
+   the workflow has not run on GitHub.
 9. **Automatic tool-output compression.** An OpenCode plugin hook for `read`,
    `grep` and `shell` results, so the agent does not call `sieve_compress` by
    hand. Acceptance: a session where tool results are compressed automatically,
@@ -124,7 +130,7 @@ are built.
 | LLM summaries | 2 to 3 days |
 | Memory and compaction | 2 to 3 days |
 | Token chunks and call graphs | 3 to 4 days |
-| FastAPI, Docker, CI | 2 to 3 days |
+| FastAPI, Docker, CI | 0.5 day to verify (code is present) |
 | Automatic compression plugin | 3 to 4 days |
 | Installer | 1 to 2 days |
 | Multi-repo benchmark | 3 to 5 days |

@@ -23,7 +23,9 @@
 The engine is transport independent. The A/B demo calls `compose` and attaches
 the result as a file. The product path calls the same functions through
 `server/mcp.py`, which OpenCode starts as a local stdio subprocess in the
-project directory.
+project directory. `http_server.py` exposes the same functions over FastAPI for
+scripts, dashboards and a hosted deployment. The Dockerfile packages that
+service, and the CI workflow runs lint, tests, the eval and an HTTP import.
 
 Sieve has two input paths. The repository path decides which files and symbols
 the agent sees. The tool-output path compresses what a tool returns before the
@@ -43,10 +45,10 @@ implemented.
 LLM: not called inside Sieve. The prompt is the deliverable. The agent consumes
 it. Compression is deterministic and local, so it adds no model cost.
 
-Why no FastAPI, Celery or Docker yet: a local repo indexes in well under a
-second, and a local stdio server needs no deployment. The engine functions are
-transport agnostic, so an HTTP adapter is mechanical when a shared or remote
-service is needed.
+Why no Celery or pgvector yet: a local repo indexes in well under a second, and
+a local stdio server needs no deployment. The FastAPI adapter and Dockerfile are
+present for a hosted path. The engine functions are transport agnostic, so a
+queue or a vector store is mechanical when a shared or remote service needs it.
 
 Data flow per query: `task -> classify -> BM25 over file chunks -> boosts ->
 top-k -> budget split -> compose -> tiktoken ceiling -> trace`.

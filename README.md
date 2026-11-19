@@ -54,7 +54,10 @@ sieve/
     bm25.py               BM25 from scratch
     hybrid.py             symbol, import and call-graph boosts
   server/
-    mcp.py                MCP server: index, query, read, compress, original, symbol, stats
+    mcp.py                MCP server: index, query, read, compress, original, symbol, stats, memory
+  http_server.py          FastAPI adapter over the same engine
+Dockerfile                HTTP service image
+.github/workflows/ci.yml  lint, tests, eval, HTTP import
 tools/
   build_large_repo.py     generates the 18-file demo repo with 3 known bugs
   ab_build.py             builds the full-context and Sieve-context A/B arms
@@ -77,10 +80,10 @@ experiments/
 
 ## Requirements
 Python 3.11+. Install with `pip install -e .`. Dependencies are `tiktoken`,
-`tree-sitter`, `tree-sitter-language-pack` and the `mcp` SDK. The token count
-falls back to char/4 if `tiktoken` cannot load, and every trace records which
-backend was used. No API key is needed for the retrieval eval. The OpenCode A/B
-needs an OpenCode provider login.
+`tree-sitter`, `tree-sitter-language-pack`, the `mcp` SDK, `fastapi` and
+`uvicorn`. The token count falls back to char/4 if `tiktoken` cannot load, and
+every trace records which backend was used. No API key is needed for the
+retrieval eval. The OpenCode A/B needs an OpenCode provider login.
 
 ## How to Run
 Generate demo repo:
@@ -137,6 +140,14 @@ A `/sieve` command is included. Run `/sieve <task>` in OpenCode. It expands to
 the index, query, read and compress workflow above. The project copy is
 `.opencode/commands/sieve.md`; the global copy is
 `~/.config/opencode/commands/sieve.md`. The command name is `sieve`, not `seive`.
+
+## HTTP service
+`sieve-serve` starts FastAPI on `127.0.0.1:8000`, or run
+`python -m uvicorn sieve.http_server:app --port 8000`. Endpoints are `/health`,
+`/index`, `/query`, `/read`, `/compress`, `/stats` and `/original/{ref}`. A live
+check returned 18 files for the demo repo and a 538 token query under the 600
+budget. The Dockerfile builds the same service. Docker is not installed on the
+development machine, so the image was not built there.
 
 The single-step commands are below. They live under
 `.opencode/commands/sieve/` and are installed globally too.
@@ -292,15 +303,17 @@ ms locally to halve input tokens is the full trade.
 - Tree-sitter grammars come from the language pack. Unknown languages fall back to regex or plain text, so their symbols are coarser.
 - Call edges are extracted for Python only. Other languages get symbols and imports but no graph boost.
 - Single Python repo, 12 tasks, gold labels by authors, plus one TypeScript demo question.
-- No vector DB and no HTTP service in v0.5 by design.
+- No vector DB in v0.5. The HTTP adapter and Dockerfile are present.
 - Tokenizer fallback char/4 is recorded in every trace when tiktoken cannot load.
+- Docker is not installed on the development machine, so the image is not built there. CI is written but not run against a remote.
 
 ## Next Milestones
 1. LLM summarizer with identifier-preservation check.
 2. LLM fix-rate eval with pinned model, temp=0, cost tracking.
 3. Learned allocator trained on collected logs, leave-one-repo-out test.
 4. Dense embeddings + pgvector + RRF fusion, ablated against BM25.
-5. FastAPI HTTP and Docker for the remote deployment path.
+5. FastAPI HTTP and Docker. The HTTP adapter, Dockerfile and CI workflow are in
+   place. A Docker build and a GitHub CI run remain to be executed.
 6. Automatic OpenCode plugin for tool-output compression.
 
 The full gap analysis is in `docs/REMAINING.md`.
