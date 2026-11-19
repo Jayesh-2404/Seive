@@ -7,10 +7,10 @@ Bypass rule (fixes toy-repo failure): if repo fits in budget, return full.
 Otherwise split by task type (heuristic, to be learned from logs in v1).
 """
 SPLITS = {
-    "bug_fix":  {"symbols": 0.30, "semantic": 0.45, "summary": 0.15, "memory": 0.10},
+    "bug_fix":  {"symbols": 0.25, "semantic": 0.50, "summary": 0.15, "memory": 0.10},
     "feature":  {"symbols": 0.20, "semantic": 0.55, "summary": 0.15, "memory": 0.10},
-    "perf":     {"symbols": 0.10, "semantic": 0.35, "summary": 0.45, "memory": 0.10},
-    "question": {"symbols": 0.20, "semantic": 0.40, "summary": 0.30, "memory": 0.10},
+    "perf":     {"symbols": 0.10, "semantic": 0.40, "summary": 0.40, "memory": 0.10},
+    "question": {"symbols": 0.15, "semantic": 0.60, "summary": 0.15, "memory": 0.10},
 }
 KEYWORDS = {
     "bug_fix": ["fix", "bug", "error", "exception", "traceback", "keyerror", "fail"],

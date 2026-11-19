@@ -3,24 +3,24 @@
  "q": "Add refund flow using payments gateway",
  "system": "sieve",
  "tokens": {
-  "symbols": 291,
-  "semantic": 336,
-  "summary": 0,
-  "memory": 0,
-  "total": 659
+  "symbols": 111,
+  "semantic": 276,
+  "summary": 90,
+  "memory": 1,
+  "total": 511
  },
  "files": [
   "payments.py",
   "orders.py",
-  "auth.py",
-  "cart.py",
-  "db.py"
+  "api.py",
+  "app.py",
+  "auth.py"
  ],
  "gold": [
   "payments.py",
   "orders.py",
   "db.py"
  ],
- "recall": 1.0,
- "prompt_hash": "37620955"
+ "recall": 0.67,
+ "prompt_hash": "7e41892a643f"
 }

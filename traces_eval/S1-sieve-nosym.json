@@ -3,11 +3,11 @@
  "q": "How do notifications send email and sms?",
  "system": "sieve-nosym",
  "tokens": {
-  "symbols": 291,
-  "semantic": 183,
-  "summary": 65,
-  "memory": 0,
-  "total": 573
+  "symbols": 81,
+  "semantic": 306,
+  "summary": 90,
+  "memory": 1,
+  "total": 511
  },
  "files": [
   "services_notify.py",
@@ -22,5 +22,5 @@
   "app.py"
  ],
  "recall": 0.67,
- "prompt_hash": "75803669"
+ "prompt_hash": "f01512d20b1d"
 }

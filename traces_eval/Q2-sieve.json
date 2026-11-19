@@ -3,16 +3,16 @@
  "q": "How is checkout total computed? Which files touch prices?",
  "system": "sieve",
  "tokens": {
-  "symbols": 291,
-  "semantic": 237,
-  "summary": 32,
-  "memory": 0,
-  "total": 597
+  "symbols": 79,
+  "semantic": 358,
+  "summary": 90,
+  "memory": 1,
+  "total": 566
  },
  "files": [
   "api.py",
-  "orders.py",
   "cart.py",
+  "orders.py",
   "auth.py",
   "tests_core.py"
  ],
@@ -22,5 +22,5 @@
   "api.py"
  ],
  "recall": 1.0,
- "prompt_hash": "93821865"
+ "prompt_hash": "db197818d27b"
 }

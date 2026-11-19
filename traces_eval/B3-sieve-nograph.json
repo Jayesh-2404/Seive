@@ -3,11 +3,11 @@
  "q": "Fix cache returning stale expired entries",
  "system": "sieve-nograph",
  "tokens": {
-  "symbols": 291,
-  "semantic": 300,
-  "summary": 0,
-  "memory": 0,
-  "total": 624
+  "symbols": 143,
+  "semantic": 266,
+  "summary": 90,
+  "memory": 1,
+  "total": 533
  },
  "files": [
   "api.py",
@@ -22,5 +22,5 @@
   "config.py"
  ],
  "recall": 1.0,
- "prompt_hash": "51251089"
+ "prompt_hash": "d398cdff596b"
 }

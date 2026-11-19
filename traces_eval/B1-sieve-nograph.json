@@ -3,11 +3,11 @@
  "q": "Fix KeyError in check_auth when token is missing",
  "system": "sieve-nograph",
  "tokens": {
-  "symbols": 291,
-  "semantic": 272,
-  "summary": 0,
-  "memory": 0,
-  "total": 599
+  "symbols": 140,
+  "semantic": 238,
+  "summary": 90,
+  "memory": 1,
+  "total": 504
  },
  "files": [
   "auth.py",
@@ -22,5 +22,5 @@
   "middleware.py"
  ],
  "recall": 1.0,
- "prompt_hash": "63952603"
+ "prompt_hash": "fcc7f6c9f947"
 }

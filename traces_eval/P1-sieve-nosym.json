@@ -3,18 +3,18 @@
  "q": "Investigate slow checkout, suspect N+1 in list_orders",
  "system": "sieve-nosym",
  "tokens": {
-  "symbols": 291,
-  "semantic": 206,
-  "summary": 62,
-  "memory": 0,
-  "total": 598
+  "symbols": 55,
+  "semantic": 178,
+  "summary": 194,
+  "memory": 1,
+  "total": 464
  },
  "files": [
   "reports.py",
-  "db.py",
   "utils.py",
-  "payments.py",
-  "app.py"
+  "db.py",
+  "api.py",
+  "payments.py"
  ],
  "gold": [
   "db.py",
@@ -22,5 +22,5 @@
   "reports.py"
  ],
  "recall": 0.67,
- "prompt_hash": "82924912"
+ "prompt_hash": "2dd4cd9fbe2e"
 }

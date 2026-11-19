@@ -3,18 +3,18 @@
  "q": "Refactor cart module without changing totals",
  "system": "sieve-nosym",
  "tokens": {
-  "symbols": 291,
-  "semantic": 237,
-  "summary": 32,
-  "memory": 0,
-  "total": 594
+  "symbols": 83,
+  "semantic": 338,
+  "summary": 90,
+  "memory": 1,
+  "total": 545
  },
  "files": [
   "cart.py",
   "orders.py",
   "api.py",
   "tests_core.py",
-  "auth.py"
+  "payments.py"
  ],
  "gold": [
   "cart.py",
@@ -22,5 +22,5 @@
   "utils.py"
  ],
  "recall": 0.67,
- "prompt_hash": "39345578"
+ "prompt_hash": "1cb603791460"
 }

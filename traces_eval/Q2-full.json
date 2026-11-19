@@ -3,7 +3,7 @@
  "q": "How is checkout total computed? Which files touch prices?",
  "system": "full",
  "tokens": {
-  "total": 1127
+  "total": 1068
  },
  "files": [
   "api.py",
@@ -31,5 +31,5 @@
   "api.py"
  ],
  "recall": 1.0,
- "prompt_hash": "53295365"
+ "prompt_hash": "83d19f3d2c0a"
 }

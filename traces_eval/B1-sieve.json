@@ -3,18 +3,18 @@
  "q": "Fix KeyError in check_auth when token is missing",
  "system": "sieve",
  "tokens": {
-  "symbols": 291,
-  "semantic": 272,
-  "summary": 0,
-  "memory": 0,
-  "total": 599
+  "symbols": 139,
+  "semantic": 238,
+  "summary": 90,
+  "memory": 1,
+  "total": 503
  },
  "files": [
   "auth.py",
   "tests_core.py",
   "api.py",
   "middleware.py",
-  "cart.py"
+  "cache.py"
  ],
  "gold": [
   "auth.py",
@@ -22,5 +22,5 @@
   "middleware.py"
  ],
  "recall": 1.0,
- "prompt_hash": "63952603"
+ "prompt_hash": "1b11c9009989"
 }

@@ -3,17 +3,17 @@
  "q": "Where is auth validated? What calls check_auth?",
  "system": "sieve-nosym",
  "tokens": {
-  "symbols": 291,
-  "semantic": 240,
-  "summary": 31,
-  "memory": 0,
-  "total": 598
+  "symbols": 78,
+  "semantic": 290,
+  "summary": 90,
+  "memory": 1,
+  "total": 494
  },
  "files": [
   "tests_core.py",
-  "api.py",
   "auth.py",
   "middleware.py",
+  "api.py",
   "db.py"
  ],
  "gold": [
@@ -22,5 +22,5 @@
   "middleware.py"
  ],
  "recall": 1.0,
- "prompt_hash": "96085573"
+ "prompt_hash": "babff799a602"
 }

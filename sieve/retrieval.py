@@ -10,20 +10,28 @@ Algorithm:
 import re, math, collections
 
 TOKEN_RE = re.compile(r"[a-zA-Z_][a-zA-Z0-9_]*")
+CAMEL_RE = re.compile(r"[A-Z]+(?=[A-Z][a-z])|[A-Z]?[a-z]+|[A-Z]+|\d+")
 K1, B = 1.2, 0.75
+TEST_MARKERS = (".test.", ".spec.", "/test_", "test_", ".stories.")
 
 def tokenize(text: str):
-    toks = TOKEN_RE.findall(text.lower())
     out = []
-    for t in toks:  # split snake_case so 'check_auth' matches 'auth'
-        out.append(t)
-        if "_" in t:
-            out.extend(x for x in t.split("_") if x)
+    for raw in TOKEN_RE.findall(text):
+        # split snake_case and camelCase so 'buildWorkItems' matches 'work'
+        for part in raw.split("_"):
+            if not part:
+                continue
+            out.append(part.lower())
+            if any(c.isupper() for c in part[1:]):
+                out.extend(m.lower() for m in CAMEL_RE.findall(part))
     return out
+
+def _is_test(path: str):
+    return any(m in path for m in TEST_MARKERS)
 
 def build_stats(chunks):
     """Precompute doc lengths, avgdl, doc frequencies. chunks: file-level only."""
-    doc_toks = [tokenize(c["file"] + " " + c["text"][:3000]) for c in chunks]
+    doc_toks = [tokenize((c["file"] + " ") * 3 + c["text"][:3000]) for c in chunks]
     lens = [len(t) for t in doc_toks]
     avgdl = sum(lens) / max(1, len(lens))
     df = collections.Counter()
@@ -57,16 +65,24 @@ def hybrid_retrieve(query, index, top_k=5, use_symbols=True, use_graph=True):
     stats = build_stats(file_chunks)
     scores = bm25(query, file_chunks, stats)
     qt = set(tokenize(query))
-    syms_by_file, imps_by_file = {}, {}
+    exact_by_file, part_by_file, imps_by_file = {}, {}, {}
     for s in index["symbols"]:
-        syms_by_file.setdefault(s["file"], set()).add(s["symbol"].lower())
+        exact_by_file.setdefault(s["file"], set()).add(s["symbol"].lower())
+        part_by_file.setdefault(s["file"], set()).update(tokenize(s["symbol"]))
     for f in index["files"]:
         imps_by_file[f["file"]] = set(i.lower().split(".")[0] for i in f["imports"])
     for i, c in enumerate(file_chunks):
-        if use_symbols and (qt & syms_by_file.get(c["file"], set())):
+        f = c["file"]
+        if use_symbols and qt & exact_by_file.get(f, set()):
             scores[i] += 5.0
-        if qt & imps_by_file.get(c["file"], set()):
+        elif qt & part_by_file.get(f, set()):
             scores[i] += 2.0
+        if qt & imps_by_file.get(f, set()):
+            scores[i] += 2.0
+    # Tests describe runtime code but are not part of the runtime flow.
+    for i, c in enumerate(file_chunks):
+        if _is_test(c["file"]):
+            scores[i] *= 0.3
     order = sorted(range(len(file_chunks)), key=lambda i: -scores[i])
     # call-graph 1-hop: callees of top-3 get boost, then re-sort ranks 4+
     if use_graph:
@@ -76,7 +92,7 @@ def hybrid_retrieve(query, index, top_k=5, use_symbols=True, use_graph=True):
             if e["file"] in top_files:
                 callees.add(e["callee"].lower())
         boosted = set()
-        for f, syms in syms_by_file.items():
+        for f, syms in part_by_file.items():
             if syms & callees and f not in top_files:
                 boosted.add(f)
         for i, c in enumerate(file_chunks):

@@ -3,11 +3,11 @@
  "q": "Fix cart_total dropping last item in checkout",
  "system": "sieve",
  "tokens": {
-  "symbols": 291,
-  "semantic": 237,
-  "summary": 29,
-  "memory": 0,
-  "total": 593
+  "symbols": 138,
+  "semantic": 229,
+  "summary": 90,
+  "memory": 1,
+  "total": 492
  },
  "files": [
   "cart.py",
@@ -22,5 +22,5 @@
   "orders.py"
  ],
  "recall": 1.0,
- "prompt_hash": "32310701"
+ "prompt_hash": "d3e360f8ffc6"
 }

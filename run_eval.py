@@ -3,7 +3,6 @@
 Systems:
   full    - dump all files (upper success bound, worst tokens)
   trunc   - naive first-N tokens cut to budget
-  tfidf   - top-k chunks, no symbols, no graph, no summaries
   sieve   - BM25 + symbols + graph + summaries + routed budget
   sieve-nosym - sieve minus symbol bonus (ablation)
   sieve-nograph - sieve minus call-graph boost (ablation)
@@ -15,7 +14,7 @@ end-to-end LLM fix success = experiment to be conducted (needs API key).
 
 Writes results_eval.csv + traces_eval/*.json
 """
-import json, time, csv, sys
+import json, time, csv, sys, hashlib
 from pathlib import Path
 sys.path.insert(0, ".")
 from sieve import indexer, retrieval, allocator, composer, tokenizer
@@ -68,7 +67,7 @@ def run_system(name, index, tasks, budget):
         Path(f"traces_eval/{t['id']}-{name}.json").write_text(json.dumps(
             {"task":t["id"],"q":t["q"],"system":name,"tokens":layers,
              "files":files,"gold":t["gold"],"recall":round(rec,2),
-             "prompt_hash":str(hash(prompt)%10**8)}, indent=1))
+             "prompt_hash": hashlib.sha256(prompt.encode()).hexdigest()[:12]}, indent=1))
     return rows
 
 def main(budget=4000):
@@ -78,9 +77,8 @@ def main(budget=4000):
     index = indexer.index_repo(repo)
     print(f"repo files={len(index['files'])} total_tokens={index['total_tokens']} symbols={len(index['symbols'])} edges={len(index['edges'])}")
     all_rows = []
-    for sys_name in ["full","trunc","tfidf","sieve","sieve-nosym","sieve-nograph"]:
-        # tfidf = no symbols/graph/summary effect approximated by tfidf path
-        all_rows += run_system("tfidf" if sys_name=="tfidf" else sys_name, index, TASKS, budget) if sys_name=="tfidf" else run_system(sys_name, index, TASKS, budget)
+    for sys_name in ["full","trunc","sieve","sieve-nosym","sieve-nograph"]:
+        all_rows += run_system(sys_name, index, TASKS, budget)
     # functional bug presence (proves tasks are real, not toy pass)
     try:
         import tests_core

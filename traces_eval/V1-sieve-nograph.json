@@ -3,18 +3,18 @@
  "q": "Validate email and quantity inputs where?",
  "system": "sieve-nograph",
  "tokens": {
-  "symbols": 291,
-  "semantic": 278,
-  "summary": 0,
-  "memory": 0,
-  "total": 601
+  "symbols": 84,
+  "semantic": 297,
+  "summary": 90,
+  "memory": 1,
+  "total": 506
  },
  "files": [
   "validators.py",
+  "services_notify.py",
   "db.py",
   "services_search.py",
-  "models.py",
-  "services_notify.py"
+  "models.py"
  ],
  "gold": [
   "validators.py",
@@ -22,5 +22,5 @@
   "utils.py"
  ],
  "recall": 0.33,
- "prompt_hash": "8502461"
+ "prompt_hash": "dc8694135908"
 }

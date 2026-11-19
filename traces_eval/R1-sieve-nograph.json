@@ -3,11 +3,11 @@
  "q": "Refactor cart module without changing totals",
  "system": "sieve-nograph",
  "tokens": {
-  "symbols": 291,
-  "semantic": 237,
-  "summary": 31,
-  "memory": 0,
-  "total": 592
+  "symbols": 82,
+  "semantic": 378,
+  "summary": 90,
+  "memory": 1,
+  "total": 585
  },
  "files": [
   "cart.py",
@@ -22,5 +22,5 @@
   "utils.py"
  ],
  "recall": 0.67,
- "prompt_hash": "35182000"
+ "prompt_hash": "e8d74aa0f78f"
 }

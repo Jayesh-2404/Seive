@@ -3,17 +3,17 @@
  "q": "Where are orders listed and revenue computed?",
  "system": "sieve",
  "tokens": {
-  "symbols": 291,
-  "semantic": 263,
-  "summary": 11,
-  "memory": 0,
-  "total": 599
+  "symbols": 86,
+  "semantic": 297,
+  "summary": 90,
+  "memory": 1,
+  "total": 508
  },
  "files": [
   "reports.py",
   "db.py",
-  "validators.py",
   "services_search.py",
+  "validators.py",
   "orders.py"
  ],
  "gold": [
@@ -22,5 +22,5 @@
   "reports.py"
  ],
  "recall": 1.0,
- "prompt_hash": "71715436"
+ "prompt_hash": "55bed9cf2c84"
 }

@@ -1,0 +1,28 @@
+{
+ "ses-sieve-demo-a": {
+  "id": "ses-sieve-demo-a",
+  "model": {
+   "id": "kimi-k2.7-code",
+   "providerID": "opencode-go"
+  },
+  "input": 52507,
+  "output": 602,
+  "reasoning": 100,
+  "cache_read": 0,
+  "cache_write": 51407,
+  "cost": 0.0
+ },
+ "ses-sieve-demo-b": {
+  "id": "ses-sieve-demo-b",
+  "model": {
+   "id": "kimi-k2.7-code",
+   "providerID": "opencode-go"
+  },
+  "input": 7067,
+  "output": 443,
+  "reasoning": 447,
+  "cache_read": 0,
+  "cache_write": 6241,
+  "cost": 0.0
+ }
+}

@@ -3,18 +3,18 @@
  "q": "Add logout endpoint removing user from Session",
  "system": "sieve-nosym",
  "tokens": {
-  "symbols": 291,
-  "semantic": 298,
-  "summary": 0,
-  "memory": 0,
-  "total": 622
+  "symbols": 110,
+  "semantic": 319,
+  "summary": 90,
+  "memory": 1,
+  "total": 555
  },
  "files": [
   "auth.py",
   "middleware.py",
-  "api.py",
+  "models.py",
   "db.py",
-  "services_search.py"
+  "api.py"
  ],
  "gold": [
   "auth.py",
@@ -22,5 +22,5 @@
   "middleware.py"
  ],
  "recall": 1.0,
- "prompt_hash": "35134532"
+ "prompt_hash": "20f0354b8673"
 }
