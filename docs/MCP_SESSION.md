@@ -16,6 +16,7 @@ OpenCode prefixes the server name, so the exposed names are below.
 | `sieve_original` | `ref`, `start_line`, `end_line` | the original text or a line range | when the compressed text is not enough |
 | `sieve_symbol` | `name` | symbol definitions | when the name is already known |
 | `sieve_stats` | none | token savings recorded for read, compress and query | for the demo |
+| `sieve_memory` | `note=""` | persistent notes and recent turns; pass a note to record one | across a long session |
 
 Compression is lossy. The original always goes to `~/.sieve/originals` and
 comes back by `ref`. Set `SIEVE_CACHE_DIR` to move it.
@@ -46,7 +47,8 @@ comes back by `ref`. Set `SIEVE_CACHE_DIR` to move it.
 ✓ sieve   connected
 ```
 
-The server log confirms `server=sieve tools=7`.
+The recorded session ran with 7 tools. The current server has 8 after the
+memory tool was added. Restart OpenCode or run `/reload` to see it.
 
 ## Agent
 
@@ -96,6 +98,7 @@ globally too.
 | `/sieve/read` | file, optional symbol | one file or one symbol |
 | `/sieve/compress` | text | compress noisy output |
 | `/sieve/stats` | none | token savings |
+| `/sieve/memory` | optional note | show or record memory |
 | `/sieve/symbol` | name | find a definition |
 | `/sieve/original` | ref, optional start and end | recover an original |
 

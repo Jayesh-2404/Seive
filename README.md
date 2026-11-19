@@ -128,8 +128,8 @@ MCP check. Install the package, then configure the server in the project:
 ```
 `opencode mcp list` then shows `✓ sieve connected`. OpenCode exposes
 `sieve_index`, `sieve_query`, `sieve_read`, `sieve_compress`, `sieve_original`,
-`sieve_symbol` and `sieve_stats`. With `codemode: false` the tools appear with
-those names. Under the default Code Mode they are grouped as
+`sieve_symbol`, `sieve_stats` and `sieve_memory`. With `codemode: false` the
+tools appear with those names. Under the default Code Mode they are grouped as
 `tools.sieve.index` and so on. The server is also available as `sieve-mcp` or
 `python -m sieve.mcp_server` for any other MCP client.
 
@@ -149,6 +149,7 @@ The single-step commands are below. They live under
 | `/sieve/read <file> [symbol]` | one file or one symbol |
 | `/sieve/compress <text>` | compress noisy output |
 | `/sieve/stats` | token savings |
+| `/sieve/memory [note]` | show or record conversation memory |
 | `/sieve/symbol <name>` | find a definition |
 | `/sieve/original <ref> [start] [end]` | recover an original |
 

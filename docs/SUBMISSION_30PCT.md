@@ -14,7 +14,8 @@ sieve/composer.py           -> symbols -> top-k -> extractive summaries, hard ce
 sieve/compress.py           -> budgeted compression for logs, tests, JSON, CSV, HTML
 sieve/read.py               -> symbol-aware file reads
 sieve/store.py              -> original text store and token event log
-sieve/server/mcp.py         -> MCP: index, query, read, compress, original, symbol, stats
+sieve/memory.py             -> persistent notes and recent turns, wired into query
+sieve/server/mcp.py         -> MCP: index, query, read, compress, original, symbol, stats, memory
 sieve/cli.py                -> the same operations from a terminal
 run_eval.py                 -> 12 tasks x 5 systems, Recall@5 + tokens + latency + traces
 tools/ab_build.py           -> builds the full-context and Sieve arms for an OpenCode A/B
@@ -77,6 +78,7 @@ Every original is kept in `~/.sieve/originals` and comes back with
 - pgvector / embeddings / FastAPI HTTP / Docker (local stdio is the current deployment path)
 - LLM fix-rate eval at scale (A/B pilot run, needs reps and more tasks)
 - Call edges for non-Python languages, so the graph boost is Python-only
+- Conversation compaction (memory is wired, but old turns are not compacted)
 - Remote MCP deployment, which needs the repo on the server side
 
 ## 5. How to reproduce
@@ -87,6 +89,7 @@ python run_eval.py 600
 python -m pytest -q
 sieve read auth.py --repo sample_repo_large --symbol check_auth --budget 200 --json
 sieve compress noisy.log --budget 300 --json
+sieve memory --note "decision: keep the six-task benchmark"
 sieve stats
 ```
 Outputs: `results_eval.csv`, `traces_eval/<task>-<system>.json`

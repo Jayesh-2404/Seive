@@ -1,6 +1,7 @@
-"""Command line interface: index, query, read, compress, original, stats, mcp."""
+"""Command line interface: index, query, read, compress, original, stats, memory, mcp."""
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -10,9 +11,10 @@ from .composer import compose
 from .compress import compress_text
 from .config import DEFAULT_BUDGET, DEFAULT_TOP_K
 from .index import index_repo
+from .memory import Memory
 from .read import read_file
 from .retrieval import hybrid_retrieve
-from .store import STORE, event_stats, log_event
+from .store import STORE, cache_root, event_stats, log_event
 
 
 def _read_input(path: str) -> str:
@@ -63,6 +65,11 @@ def main(argv: list[str] | None = None) -> int:
     original_parser.add_argument("--end", type=int, default=None)
 
     subparsers.add_parser("stats", help="show recorded token savings")
+
+    memory_parser = subparsers.add_parser("memory", help="show or record memory")
+    memory_parser.add_argument("--note", default="")
+    memory_parser.add_argument("--limit", type=int, default=5)
+
     subparsers.add_parser("mcp", help="run the MCP server over stdio")
 
     args = parser.parse_args(argv)
@@ -70,6 +77,15 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "mcp":
         from .server.mcp import main as run_server
         run_server()
+        return 0
+
+    if args.command == "memory":
+        memory = Memory(path=os.getenv("SIEVE_MEMORY_DIR",
+                                       str(cache_root() / "memory")))
+        if args.note:
+            memory.log(args.note, [], note=args.note)
+        print(json.dumps({"notes": memory.notes(),
+                          "recent": memory.recent(args.limit)}, indent=2))
         return 0
 
     if args.command == "compress":

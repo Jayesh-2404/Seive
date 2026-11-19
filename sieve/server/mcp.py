@@ -5,6 +5,7 @@ tool call indexes the working directory and the index is reused for a short TTL
 or until a refresh is requested. Tools keep every original so a compressed
 result can be expanded again.
 """
+import os
 import threading
 import time
 from dataclasses import dataclass
@@ -18,10 +19,11 @@ from ..composer import compose
 from ..compress import compress_text
 from ..config import DEFAULT_BUDGET, DEFAULT_TOP_K
 from ..index import index_repo
+from ..memory import Memory
 from ..models import RepositoryIndex
 from ..read import read_file
 from ..retrieval import hybrid_retrieve
-from ..store import STORE, event_stats, log_event
+from ..store import STORE, cache_root, event_stats, log_event
 
 INDEX_TTL_SECONDS = 30.0
 
@@ -30,9 +32,12 @@ Call the index tool once for the project. Before opening a file, call the read
 tool with the path and, when known, the symbol name. For noisy output such as
 logs, test results, JSON or CSV, call the compress tool. Both keep the original,
 and the original tool returns it by ref. Prefer the files returned by the query
-tool. Do not read files outside that set unless the context is insufficient."""
+tool. Do not read files outside that set unless the context is insufficient.
+Use the memory tool to record decisions and failures. The query tool includes
+recent turns in its memory layer."""
 
 server = MCPServer("sieve", version="0.5.0", instructions=INSTRUCTIONS)
+_memory = Memory(path=os.getenv("SIEVE_MEMORY_DIR", str(cache_root() / "memory")))
 
 
 @dataclass
@@ -93,14 +98,17 @@ def sieve_query(task: str, budget: int = DEFAULT_BUDGET,
         return {"error": str(exc)}
     allocation = allocate(task, budget, index["total_tokens"])
     ranked, meta = hybrid_retrieve(task, index, top_k=top_k)
-    prompt, layers = compose(task, index, ranked, allocation, budget)
+    prompt, layers = compose(task, index, ranked, allocation, budget,
+                             memory_turns=_memory.recent(4))
+    files = [chunk["file"] for _, chunk in ranked]
+    _memory.log(task, files, note=f"query: {task[:120]}")
     log_event("query", index["total_tokens"], layers["total"], kind="query")
     return {
         "repo": root,
         "prompt": prompt,
         "layers": layers,
         "alloc": allocation,
-        "files": [chunk["file"] for _, chunk in ranked],
+        "files": files,
         "method": meta["method"],
     }
 
@@ -152,6 +160,14 @@ def sieve_symbol(name: str) -> list[dict]:
 def sieve_stats() -> dict:
     """Return token savings recorded for read, compress and query calls."""
     return event_stats()
+
+
+@server.tool(name="memory")
+def sieve_memory(note: str = "") -> dict:
+    """Return recent turns and notes. Pass a note to record a decision or failure."""
+    if note.strip():
+        _memory.log(note, [], note=note)
+    return {"notes": _memory.notes(), "recent": _memory.recent(5)}
 
 
 def main() -> None:

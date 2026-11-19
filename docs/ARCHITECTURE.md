@@ -36,7 +36,9 @@ No database is needed at this scale. SQLite or pgvector is gated on a repo large
 enough to need it.
 
 Memory: `memory/turns.jsonl` plus `memory/notes.md`. Notes hold rules that
-survive compaction.
+survive compaction. The MCP query includes the last turns in its memory layer
+and the `memory` tool shows or records a note. Compaction of old turns is not
+implemented.
 
 LLM: not called inside Sieve. The prompt is the deliverable. The agent consumes
 it. Compression is deterministic and local, so it adds no model cost.

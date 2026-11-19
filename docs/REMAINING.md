@@ -28,7 +28,7 @@ Chunks are capped by characters, not tokens.
 | 2 | Token-aware chunker and embedding pipeline with vector search | Missing | `config.py` uses `FILE_CHUNK_CHARS=8000`, `FUNC_CHUNK_CHARS=2500`; no embedding dependency | token windows, embedding provider, vector store, fusion, ablation |
 | 3 | Summarization layer that preserves identifiers | Partial | `composer.summarize_file` is an extractive one-liner | LLM summary, identifier check, cache by hash, cost |
 | 4 | Budget allocator that predicts the best split and learns | Partial | `allocator.py` is a keyword rule with fixed splits | log 500+ runs, train a model, leave-one-repo-out, compare to rule |
-| 5 | Conversation and trajectory memory for long sessions | Missing in practice | `sieve/memory.py` exists; no call site | wire memory, store decisions, failures, files; compact old turns |
+| 5 | Conversation and trajectory memory for long sessions | Partial | `Memory` is wired into the MCP query and exposed as `sieve_memory`; `sieve/cli.py memory` reads it | compaction of old turns, decisions and failures in a measured multi-turn session |
 | 6 | MCP service | Done | `sieve/server/mcp.py`, 7 tools, 8 commands, `ses-sieve-mcp3` | packaging and installer |
 | 7 | Benchmark of token cost, latency and task success with vs without | Partial, improved | 12-task retrieval eval; 6-task real benchmark with 6/6 both and 86.9% fewer input tokens; one MCP session | harder task set with patches and tests, 3 reps, cost, multi-repo |
 
@@ -69,6 +69,8 @@ are built.
    decisions, failures, files touched and the next step. Compact old turns into
    a short state block. Acceptance: a multi-turn session where the decisions
    survive compaction, with token savings measured.
+   Progress: memory is wired into the MCP query and exposed as `sieve_memory`.
+   Compaction of old turns is still missing.
 7. **Token-aware chunks and non-Python call graphs.** Chunk by token windows.
    Extract calls for TS, JS, C, C++, Go, Java and Rust. Acceptance: a test per
    language and an ablation showing the graph boost.

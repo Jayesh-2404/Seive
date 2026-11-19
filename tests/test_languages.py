@@ -64,4 +64,4 @@ def test_mcp_tools_are_registered() -> None:
     tools = asyncio.run(server.list_tools())
     names = {getattr(tool, "name", None) for tool in tools}
     assert {"index", "query", "read", "compress", "original",
-            "symbol", "stats"} <= names
+            "symbol", "stats", "memory"} <= names
