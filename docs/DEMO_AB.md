@@ -56,6 +56,9 @@ Arm A is more detailed. Arm B is shorter and states what its context cut off.
 Neither hallucinated a file.
 
 Full answers: `AB_ANSWER_run-a.md` and `AB_ANSWER_run-b.md`.
+They are verbatim model text pulled from the session database. Arm A opens with
+the CLI step-cap notice, which is a harness artifact. Arm B has one mangled dash
+where the provider stream lost a byte. Nothing else is edited.
 
 ## Reproduce
 
