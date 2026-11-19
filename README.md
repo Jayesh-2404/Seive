@@ -31,20 +31,14 @@ are Milestone-2 and plug into the same interfaces.
 
 ## Architecture
 
-![Sieve architecture](docs/architecture.svg)
+![Sieve architecture](docs/architecture.png)
 
 Every surface runs the same engine: `discover -> index -> retrieve -> allocate ->
 compose`, under a hard token ceiling. Originals, memory and the token event log
 live under `~/.sieve`, so compressed text can always be expanded by ref.
 
-The diagram is an Excalidraw scene. To change it, edit
-`docs/architecture.excalidraw` (open it at excalidraw.com) or re-create it with
-the Excalidraw MCP server, then re-render the image:
-
-```sh
-node tools/excalidraw_arch.mjs        # create the scene through the Excalidraw MCP
-python tools/excalidraw_svg.py docs/architecture.excalidraw docs/architecture.svg
-```
+The diagram is an Excalidraw export. Edit it at excalidraw.com and export a new
+`docs/architecture.png` over the old one.
 
 ## Repository Layout
 ```
@@ -86,8 +80,6 @@ tools/
   fit_allocator.py        grid-searches splits and writes allocator_learned.json
   real_bench_build.py     builds the six-task real benchmark contexts
   real_bench_run.py       runs and scores the six-task benchmark
-  excalidraw_arch.mjs     creates the architecture scene through the Excalidraw MCP
-  excalidraw_svg.py       renders the .excalidraw scene to the README image
 tests/
   test_sieve.py           ceiling, bypass and Python indexing
   test_languages.py       six languages, discovery rules, MCP tool registration

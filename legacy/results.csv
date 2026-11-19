@@ -1,4 +1,0 @@
-task,full_tokens,trunc_tokens,sieve_tokens,saving_vs_full_pct,trace_id,task_type,latency_ms
-Fix KeyError in check_auth when token is missing,185,185,284,-53.5,49c197ff,bug_fix,1
-Where is auth validated? What calls check_auth?,185,185,283,-53.0,d0b3d86a,question,1
-Add logout that removes user from Session,185,185,281,-51.9,cbcde346,feature,5
