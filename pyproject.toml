@@ -15,6 +15,8 @@ dependencies = [
   "mcp>=2.0",
   "fastapi>=0.165",
   "uvicorn>=0.54",
+  "fastembed>=0.9",
+  "numpy>=1.26",
 ]
 
 [project.optional-dependencies]
@@ -27,6 +29,9 @@ sieve-serve = "sieve.http_server:run"
 
 [tool.setuptools.packages.find]
 include = ["sieve*"]
+
+[tool.setuptools.package-data]
+sieve = ["allocator_learned.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

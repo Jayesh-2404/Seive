@@ -7,37 +7,41 @@ runs today. It is a planning document, not a claim.
 
 | Check | Result | Evidence |
 |---|---|---|
-| Tests | 29 pass | `python -m pytest -q` |
+| Tests | 38 pass | `python -m pytest -q` |
 | Retrieval eval | full 1127 / 1.00, trunc 600 / 0.00, Sieve 548 / 0.83 | `python run_eval.py 600` |
 | Real agent A/B | 52,508 vs 6,926 input tokens, 86.8% fewer, 6/6 both | `docs/DEMO_AB.md` |
 | Six-task real benchmark | 6/6 both, 52,530 vs 6,869 avg input, 86.9% fewer | `docs/REAL_BENCH.md` |
 | HTTP service | health, 18 files indexed, 538 token query under 600 | live uvicorn check |
+| Dense ablation | 553 tokens / 0.83 / 38.6 ms vs 548 / 0.83 / 11.8 ms, no gain | `docs/EMBEDDINGS.md` |
+| Allocator grid | semantic-heavy for 3 of 4 task types, in-sample | `docs/ALLOCATOR.md` |
 | Input compression | 1,235 to 313, 571 to 120, 37,016 to 296 | `docs/MCP_SESSION.md`, `sieve stats` |
-| MCP | 7 tools, 8 slash commands, live session | `ses-sieve-mcp3`, `opencode mcp list` |
+| MCP | 8 tools, 9 slash commands, live session | `ses-sieve-mcp3`, `opencode mcp list` |
 | Languages | Python, TS, JS, C, C++, Go, Java, Rust | `tests/test_languages.py` |
 
-What is not present in the code: no embeddings, no pgvector, no learned
-allocator, no LLM summarizer, and no compaction of old turns. The `Memory` class
-is now wired into the MCP query and the `memory` tool. Tree-sitter files return
-no call edges. Chunks are capped by characters, not tokens. FastAPI, the
-Dockerfile and the CI workflow are present; the Docker build and a remote CI run
-were not executed here.
+What is not present in the code: no pgvector. A local dense index exists, but it
+did not improve the 12-task set. The allocator is a rule plus an in-sample split
+table, not a learned model. There is no LLM summarizer and no compaction of old
+turns. The `Memory` class is wired into the MCP query and the `memory` tool.
+Tree-sitter files return no call edges. Chunks are capped by characters, not
+tokens. FastAPI, the Dockerfile and the CI workflow are present; the Docker build
+and a remote CI run were not executed here.
 
 ## Synopsis objectives against the code
 
 | # | Objective | State | Evidence | Remaining |
 |---|---|---|---|---|
 | 1 | Repository scanner and AST/symbol extractor with functions, classes, imports, call graphs | Partial | `sieve/discover.py`, `sieve/parse/`; Python AST with calls, tree-sitter for 8 languages with symbols and imports | call edges for non-Python; token-aware chunks |
-| 2 | Token-aware chunker and embedding pipeline with vector search | Missing | `config.py` uses `FILE_CHUNK_CHARS=8000`, `FUNC_CHUNK_CHARS=2500`; no embedding dependency | token windows, embedding provider, vector store, fusion, ablation |
+| 2 | Token-aware chunker and embedding pipeline with vector search | Partial | `sieve/embeddings.py` with fastembed, 384 dims; `sieve-vec` ablation | pgvector, RRF, token windows, paraphrase test |
 | 3 | Summarization layer that preserves identifiers | Partial | `composer.summarize_file` is an extractive one-liner | LLM summary, identifier check, cache by hash, cost |
-| 4 | Budget allocator that predicts the best split and learns | Partial | `allocator.py` is a keyword rule with fixed splits | log 500+ runs, train a model, leave-one-repo-out, compare to rule |
+| 4 | Budget allocator that predicts the best split and learns | Partial | `allocator.py` rule plus `allocator_learned.json` from a 12-task grid search | 500+ runs, a trained model, leave-one-repo-out |
 | 5 | Conversation and trajectory memory for long sessions | Partial | `Memory` is wired into the MCP query and exposed as `sieve_memory`; `sieve/cli.py memory` reads it | compaction of old turns, decisions and failures in a measured multi-turn session |
-| 6 | MCP service | Done | `sieve/server/mcp.py`, 7 tools, 8 commands, `ses-sieve-mcp3` | packaging and installer |
+| 6 | MCP service | Done | `sieve/server/mcp.py`, 8 tools, 9 commands, `ses-sieve-mcp3` | packaging and installer |
 | 7 | Benchmark of token cost, latency and task success with vs without | Partial, improved | 12-task retrieval eval; 6-task real benchmark with 6/6 both and 86.9% fewer input tokens; one MCP session | harder task set with patches and tests, 3 reps, cost, multi-repo |
 
 The synopsis also promises PostgreSQL/pgvector and an allocator that learns from
-repeated runs. Neither is built. FastAPI, the Dockerfile and the CI workflow now
-exist; the Docker build and a remote CI run remain to be verified.
+repeated runs. pgvector is not used, and the split table is in-sample. FastAPI,
+the Dockerfile and the CI workflow now exist; the Docker build and a remote CI
+run remain to be verified.
 
 ## P0: required before the thesis is proven
 
@@ -57,6 +61,8 @@ exist; the Docker build and a remote CI run remain to be verified.
    or regression that predicts the split from task type, repo size and budget.
    Acceptance: leave-one-repo-out evaluation against the rule baseline. A
    documented negative result counts if the rule wins.
+   Progress: a trace-fitted split table is available from a 12-task grid search.
+   It is in-sample and not a trained model.
 
 ## P1: the layers the synopsis names
 
@@ -64,6 +70,8 @@ exist; the Docker build and a remote CI run remain to be verified.
    in pgvector or a local vector index, and fuse with BM25. Acceptance: a
    paraphrase task set where BM25 misses and the hybrid finds the file, with
    measured recall and latency. Keep BM25 as the fallback.
+   Progress: a local fastembed index and a `sieve-vec` ablation exist. It did
+   not improve the 12-task lexical set. pgvector and a paraphrase set remain.
 5. **LLM summarizer.** Replace the extractive one-liner for large and stale
    files. Check that every identifier in the summary exists in the file. Cache
    by file hash. Acceptance: an identifier-retention rate and a token and cost

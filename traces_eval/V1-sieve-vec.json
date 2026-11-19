@@ -1,0 +1,27 @@
+{
+ "task": "V1",
+ "q": "Validate email and quantity inputs where?",
+ "system": "sieve-vec",
+ "tokens": {
+  "symbols": 73,
+  "semantic": 330,
+  "summary": 90,
+  "memory": 0,
+  "total": 538
+ },
+ "files": [
+  "validators.py",
+  "services_notify.py",
+  "db.py",
+  "services_search.py",
+  "models.py"
+ ],
+ "gold": [
+  "validators.py",
+  "api.py",
+  "utils.py"
+ ],
+ "recall": 0.33,
+ "prompt_hash": "d4b9979f75b9",
+ "tokenizer": "tiktoken/cl100k_base"
+}

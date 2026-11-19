@@ -1,0 +1,27 @@
+{
+ "task": "Q1",
+ "q": "Where is auth validated? What calls check_auth?",
+ "system": "sieve-vec",
+ "tokens": {
+  "symbols": 78,
+  "semantic": 320,
+  "summary": 90,
+  "memory": 0,
+  "total": 536
+ },
+ "files": [
+  "auth.py",
+  "tests_core.py",
+  "middleware.py",
+  "api.py",
+  "db.py"
+ ],
+ "gold": [
+  "auth.py",
+  "api.py",
+  "middleware.py"
+ ],
+ "recall": 1.0,
+ "prompt_hash": "2cb0a0d817ce",
+ "tokenizer": "tiktoken/cl100k_base"
+}

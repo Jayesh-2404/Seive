@@ -1,0 +1,27 @@
+{
+ "task": "R1",
+ "q": "Refactor cart module without changing totals",
+ "system": "sieve-vec",
+ "tokens": {
+  "symbols": 72,
+  "semantic": 368,
+  "summary": 90,
+  "memory": 0,
+  "total": 576
+ },
+ "files": [
+  "cart.py",
+  "orders.py",
+  "api.py",
+  "tests_core.py",
+  "payments.py"
+ ],
+ "gold": [
+  "cart.py",
+  "orders.py",
+  "utils.py"
+ ],
+ "recall": 0.67,
+ "prompt_hash": "70ba972163ba",
+ "tokenizer": "tiktoken/cl100k_base"
+}

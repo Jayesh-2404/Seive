@@ -45,6 +45,8 @@ class _State:
     index: RepositoryIndex | None = None
     repo: str | None = None
     indexed_at: float = 0.0
+    vectors: object | None = None
+    vectors_repo: str | None = None
 
 
 _state = _State()
@@ -90,14 +92,25 @@ def sieve_index(repo: str = ".", refresh: bool = False) -> dict:
 
 @server.tool(name="query")
 def sieve_query(task: str, budget: int = DEFAULT_BUDGET,
-                top_k: int = DEFAULT_TOP_K) -> dict:
+                top_k: int = DEFAULT_TOP_K, learned: bool = False,
+                vectors: bool = False) -> dict:
     """Return the smallest sufficient context for a task, under a token budget."""
     try:
         root, index = _ensure()
     except Exception as exc:
         return {"error": str(exc)}
-    allocation = allocate(task, budget, index["total_tokens"])
-    ranked, meta = hybrid_retrieve(task, index, top_k=top_k)
+    allocation = allocate(task, budget, index["total_tokens"], learned=learned)
+    vector_index = None
+    if vectors:
+        try:
+            from ..embeddings import VectorIndex
+            if _state.vectors is None or _state.vectors_repo != root:
+                _state.vectors = VectorIndex().build(index)
+                _state.vectors_repo = root
+            vector_index = _state.vectors
+        except Exception as exc:
+            return {"error": f"vectors unavailable: {exc}"}
+    ranked, meta = hybrid_retrieve(task, index, top_k=top_k, vectors=vector_index)
     prompt, layers = compose(task, index, ranked, allocation, budget,
                              memory_turns=_memory.recent(4))
     files = [chunk["file"] for _, chunk in ranked]

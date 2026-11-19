@@ -1,0 +1,27 @@
+{
+ "task": "F1",
+ "q": "Add logout endpoint removing user from Session",
+ "system": "sieve-vec",
+ "tokens": {
+  "symbols": 102,
+  "semantic": 363,
+  "summary": 90,
+  "memory": 0,
+  "total": 600
+ },
+ "files": [
+  "auth.py",
+  "models.py",
+  "middleware.py",
+  "api.py",
+  "db.py"
+ ],
+ "gold": [
+  "auth.py",
+  "api.py",
+  "middleware.py"
+ ],
+ "recall": 1.0,
+ "prompt_hash": "18d6c5f251fa",
+ "tokenizer": "tiktoken/cl100k_base"
+}

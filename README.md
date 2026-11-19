@@ -52,7 +52,9 @@ sieve/
     regex_fallback.py     coarse fallback for grammars that are not installed
   retrieval/
     bm25.py               BM25 from scratch
-    hybrid.py             symbol, import and call-graph boosts
+    hybrid.py             symbol, import, call-graph and dense boosts
+  embeddings.py           local dense index with fastembed
+  allocator_learned.json  trace-fitted splits (opt-in)
   server/
     mcp.py                MCP server: index, query, read, compress, original, symbol, stats, memory
   http_server.py          FastAPI adapter over the same engine
@@ -61,6 +63,9 @@ Dockerfile                HTTP service image
 tools/
   build_large_repo.py     generates the 18-file demo repo with 3 known bugs
   ab_build.py             builds the full-context and Sieve-context A/B arms
+  fit_allocator.py        grid-searches splits and writes allocator_learned.json
+  real_bench_build.py     builds the six-task real benchmark contexts
+  real_bench_run.py       runs and scores the six-task benchmark
 tests/
   test_sieve.py           ceiling, bypass and Python indexing
   test_languages.py       six languages, discovery rules, MCP tool registration
@@ -80,10 +85,11 @@ experiments/
 
 ## Requirements
 Python 3.11+. Install with `pip install -e .`. Dependencies are `tiktoken`,
-`tree-sitter`, `tree-sitter-language-pack`, the `mcp` SDK, `fastapi` and
-`uvicorn`. The token count falls back to char/4 if `tiktoken` cannot load, and
-every trace records which backend was used. No API key is needed for the
-retrieval eval. The OpenCode A/B needs an OpenCode provider login.
+`tree-sitter`, `tree-sitter-language-pack`, the `mcp` SDK, `fastapi`,
+`uvicorn`, `fastembed` and `numpy`. The token count falls back to char/4 if
+`tiktoken` cannot load, and every trace records which backend was used. No API
+key is needed for the retrieval eval. The OpenCode A/B needs an OpenCode
+provider login.
 
 ## How to Run
 Generate demo repo:
@@ -172,6 +178,7 @@ The single-step commands are below. They live under
 | sieve | 548 | 0.83 | BM25 + symbols + graph |
 | sieve-nosym | 548 | 0.83 | symbols redundant on this repo |
 | sieve-nograph | 541 | 0.83 | no measurable graph lift here |
+| sieve-vec | 553 | 0.83 | local dense boost, no gain here |
 
 The earlier `tfidf` row is gone. The harness had routed it to the same code
 path as `sieve`, so it measured nothing.
@@ -210,6 +217,18 @@ keeps errors, paths and numbers, and drops repeated or passing lines. Every
 original goes to `~/.sieve/originals` and comes back with `sieve_original`.
 `sieve stats` reports the running total. The 2,000 line log is a synthetic
 fixture, so treat that row as a compression check, not a real repository result.
+
+## Semantic layer and allocator
+Local dense retrieval is available with `--vectors` or `vectors=true`. It uses
+`fastembed` and `BAAI/bge-small-en-v1.5` on CPU, at 384 dimensions. On the 12
+lexical tasks it did not improve recall. It used 553 tokens at 0.83 recall and
+38.6 ms, against 548 tokens, 0.83 and 11.8 ms for BM25. That is a negative
+result, kept in `docs/EMBEDDINGS.md`.
+
+A trace-fitted split table is available with `--learned` or `learned=true`. It
+is an in-sample grid search on the 12 tasks, not a trained model. The details
+and the weak evidence are in `docs/ALLOCATOR.md`. The default remains the rule
+split, so the measured A/B and eval do not move.
 
 Bug presence in `sample_repo_large/tests_core.py`: t_b1, t_b2, t_b3 all False
 (bugs reproduce, honest baseline). End-to-end LLM fix rate is marked as
@@ -302,6 +321,8 @@ ms locally to halve input tokens is the full trade.
 - Allocator is rule-based, learned version needs 500+ logged runs.
 - Tree-sitter grammars come from the language pack. Unknown languages fall back to regex or plain text, so their symbols are coarser.
 - Call edges are extracted for Python only. Other languages get symbols and imports but no graph boost.
+- Dense retrieval is local and in-memory, with no pgvector. It did not improve the 12-task lexical set.
+- The learned allocator is an in-sample split table, not a trained model.
 - Single Python repo, 12 tasks, gold labels by authors, plus one TypeScript demo question.
 - No vector DB in v0.5. The HTTP adapter and Dockerfile are present.
 - Tokenizer fallback char/4 is recorded in every trace when tiktoken cannot load.
@@ -310,10 +331,9 @@ ms locally to halve input tokens is the full trade.
 ## Next Milestones
 1. LLM summarizer with identifier-preservation check.
 2. LLM fix-rate eval with pinned model, temp=0, cost tracking.
-3. Learned allocator trained on collected logs, leave-one-repo-out test.
-4. Dense embeddings + pgvector + RRF fusion, ablated against BM25.
-5. FastAPI HTTP and Docker. The HTTP adapter, Dockerfile and CI workflow are in
-   place. A Docker build and a GitHub CI run remain to be executed.
+3. Learned allocator trained on collected logs, leave-one-repo-out test. The in-sample split table is in place.
+4. pgvector + RRF fusion, ablated against BM25. The local dense index and its negative result are in place.
+5. FastAPI HTTP and Docker. The adapter, Dockerfile and CI workflow are in place. A Docker build and a GitHub CI run remain to be executed.
 6. Automatic OpenCode plugin for tool-output compression.
 
 The full gap analysis is in `docs/REMAINING.md`.

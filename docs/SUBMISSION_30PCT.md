@@ -9,7 +9,9 @@ sieve/parse/python_ast.py   -> Python ast symbols, imports, calls
 sieve/parse/treesitter.py   -> TS, JS, C, C++, Go, Java, Rust symbols
 sieve/parse/regex_fallback.py -> fallback when a grammar is not installed
 sieve/retrieval/            -> BM25 (k1=1.2, b=0.75) + symbol/part/import/graph
+sieve/embeddings.py         -> local dense index with fastembed, 384 dims
 sieve/allocator.py          -> keyword router + bypass rule (repo<budget -> full dump)
+sieve/allocator_learned.json -> trace-fitted splits, opt-in
 sieve/composer.py           -> symbols -> top-k -> extractive summaries, hard ceiling
 sieve/compress.py           -> budgeted compression for logs, tests, JSON, CSV, HTML
 sieve/read.py               -> symbol-aware file reads
@@ -22,7 +24,8 @@ Dockerfile                  -> HTTP service image
 sieve/cli.py                -> the same operations from a terminal
 run_eval.py                 -> 12 tasks x 5 systems, Recall@5 + tokens + latency + traces
 tools/ab_build.py           -> builds the full-context and Sieve arms for an OpenCode A/B
-tests/                      -> 34 tests: ceiling, languages, compression, reads, HTTP, MCP tools
+tools/fit_allocator.py      -> grid-searches splits and writes allocator_learned.json
+tests/                      -> 38 tests: ceiling, languages, compression, reads, HTTP, vectors, memory, MCP
 tools/build_large_repo.py   -> 18-file demo repo with 3 known bugs
 ```
 
@@ -34,6 +37,7 @@ tools/build_large_repo.py   -> 18-file demo repo with 3 known bugs
 | **sieve (BM25+sym+graph)** | **548** | **0.83** | **+51.4% at high recall** |
 | sieve-nosym | 548 | 0.83 | ablation: symbols redundant here |
 | sieve-nograph | 541 | 0.83 | ablation: no measurable graph lift |
+| sieve-vec | 553 | 0.83 | dense boost, no gain on this set |
 
 Bug presence (honest, `sample_repo_large/tests_core.py`): t_b1=False, t_b2=False, t_b3=False (all 3 bugs reproduce).
 End-to-end LLM fix rate: EXPERIMENT TO BE CONDUCTED.
@@ -74,11 +78,13 @@ Every original is kept in `~/.sieve/originals` and comes back with
 3. **Hybrid boost**: exact symbol + symbol-part + import + 1-hop callee. camelCase and snake_case are split before scoring.
 4. **Budget routing**: keyword classifier with word boundaries + per-task split + bypass + hard ceiling. Cut order is memory, summaries, retrieved tail, symbols.
 5. **Budgeted compression**: kind detection, keep errors, paths and counts, collapse repeated lines, pack head and tail to a token budget, keep the original by content hash.
+6. **Dense fusion**: optional local fastembed vectors, 384 dimensions, added as a cosine boost to the BM25 and structure score. Ablated as `sieve-vec`.
+7. **Trace-fitted split**: a grid search over five candidate splits on 12 tasks, written to `allocator_learned.json` and used only with `--learned`.
 
 ## 4. What is NOT done (next 70%)
 - LLM summarizer (currently extractive one-liners preserving identifiers)
-- Learned allocator (needs >=500 logged runs; the rule ships now)
-- pgvector / embeddings (the HTTP adapter, Dockerfile and CI workflow are present)
+- Learned allocator (an in-sample split table exists, not a trained model)
+- pgvector / RRF (a local dense index exists, but it did not improve this set)
 - Docker image build and a remote CI run are not verified on this machine
 - LLM fix-rate eval at scale (A/B pilot run, needs reps and more tasks)
 - Call edges for non-Python languages, so the graph boost is Python-only
@@ -94,6 +100,8 @@ python -m pytest -q
 sieve read auth.py --repo sample_repo_large --symbol check_auth --budget 200 --json
 sieve compress noisy.log --budget 300 --json
 sieve memory --note "decision: keep the six-task benchmark"
+sieve query "fix the token check" --vectors
+sieve query "fix the token check" --learned
 sieve stats
 sieve-serve
 ```
@@ -114,4 +122,5 @@ A/B demo: `python tools/ab_build.py <repo> <out_dir> 8000`, then the two
 - This file, `results_eval.csv`, one `traces_eval/B1-sieve.json`
 - `sieve/retrieval/bm25.py`, `sieve/parse/treesitter.py`, `sieve/compress.py`, `sieve/server/mcp.py`, `sieve/http_server.py`
 - `Dockerfile`, `.github/workflows/ci.yml`
-- `docs/DEMO_AB.md`, `docs/MCP_SESSION.md`, `docs/REAL_BENCH.md`, `docs/AB_ANSWER_run-a.md`, `docs/AB_ANSWER_run-b.md`
+- `docs/DEMO_AB.md`, `docs/MCP_SESSION.md`, `docs/REAL_BENCH.md`, `docs/EMBEDDINGS.md`, `docs/ALLOCATOR.md`
+- `docs/AB_ANSWER_run-a.md`, `docs/AB_ANSWER_run-b.md`

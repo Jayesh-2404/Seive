@@ -1,0 +1,27 @@
+{
+ "task": "Q2",
+ "q": "How is checkout total computed? Which files touch prices?",
+ "system": "sieve-vec",
+ "tokens": {
+  "symbols": 78,
+  "semantic": 378,
+  "summary": 90,
+  "memory": 0,
+  "total": 595
+ },
+ "files": [
+  "api.py",
+  "cart.py",
+  "orders.py",
+  "auth.py",
+  "tests_core.py"
+ ],
+ "gold": [
+  "cart.py",
+  "orders.py",
+  "api.py"
+ ],
+ "recall": 1.0,
+ "prompt_hash": "30b1f6cf9d03",
+ "tokenizer": "tiktoken/cl100k_base"
+}

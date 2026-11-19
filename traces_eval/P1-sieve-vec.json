@@ -1,0 +1,27 @@
+{
+ "task": "P1",
+ "q": "Investigate slow checkout, suspect N+1 in list_orders",
+ "system": "sieve-vec",
+ "tokens": {
+  "symbols": 47,
+  "semantic": 206,
+  "summary": 220,
+  "memory": 0,
+  "total": 524
+ },
+ "files": [
+  "reports.py",
+  "utils.py",
+  "db.py",
+  "api.py",
+  "payments.py"
+ ],
+ "gold": [
+  "db.py",
+  "orders.py",
+  "reports.py"
+ ],
+ "recall": 0.67,
+ "prompt_hash": "fb1f6fbc17f8",
+ "tokenizer": "tiktoken/cl100k_base"
+}

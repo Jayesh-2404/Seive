@@ -1,0 +1,27 @@
+{
+ "task": "B3",
+ "q": "Fix cache returning stale expired entries",
+ "system": "sieve-vec",
+ "tokens": {
+  "symbols": 130,
+  "semantic": 328,
+  "summary": 90,
+  "memory": 0,
+  "total": 593
+ },
+ "files": [
+  "cache.py",
+  "api.py",
+  "tests_core.py",
+  "config.py",
+  "auth.py"
+ ],
+ "gold": [
+  "cache.py",
+  "api.py",
+  "config.py"
+ ],
+ "recall": 1.0,
+ "prompt_hash": "aff020050e53",
+ "tokenizer": "tiktoken/cl100k_base"
+}

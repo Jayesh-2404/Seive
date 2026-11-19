@@ -1,0 +1,27 @@
+{
+ "task": "B1",
+ "q": "Fix KeyError in check_auth when token is missing",
+ "system": "sieve-vec",
+ "tokens": {
+  "symbols": 128,
+  "semantic": 272,
+  "summary": 90,
+  "memory": 0,
+  "total": 539
+ },
+ "files": [
+  "auth.py",
+  "tests_core.py",
+  "api.py",
+  "middleware.py",
+  "cache.py"
+ ],
+ "gold": [
+  "auth.py",
+  "api.py",
+  "middleware.py"
+ ],
+ "recall": 1.0,
+ "prompt_hash": "db4b8fc39703",
+ "tokenizer": "tiktoken/cl100k_base"
+}

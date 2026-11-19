@@ -44,6 +44,8 @@ def main(argv: list[str] | None = None) -> int:
     query_parser.add_argument("--repo", default=".")
     query_parser.add_argument("--budget", type=int, default=DEFAULT_BUDGET)
     query_parser.add_argument("--top-k", type=int, default=DEFAULT_TOP_K)
+    query_parser.add_argument("--learned", action="store_true")
+    query_parser.add_argument("--vectors", action="store_true")
     query_parser.add_argument("--json", action="store_true")
 
     read_parser = subparsers.add_parser("read", help="read a file or one symbol")
@@ -133,8 +135,17 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(result, indent=2) if args.json else result["text"])
         return 0
 
-    allocation = allocate(args.task, args.budget, index["total_tokens"])
-    ranked, meta = hybrid_retrieve(args.task, index, top_k=args.top_k)
+    allocation = allocate(args.task, args.budget, index["total_tokens"],
+                          learned=args.learned)
+    vector_index = None
+    if args.vectors:
+        try:
+            from .embeddings import VectorIndex
+            vector_index = VectorIndex().build(index)
+        except Exception as exc:
+            print(f"vectors unavailable: {exc}", file=sys.stderr)
+    ranked, meta = hybrid_retrieve(args.task, index, top_k=args.top_k,
+                                    vectors=vector_index)
     prompt, layers = compose(args.task, index, ranked, allocation, args.budget)
     if args.json:
         print(json.dumps({

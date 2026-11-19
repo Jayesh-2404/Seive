@@ -1,0 +1,27 @@
+{
+ "task": "Q3",
+ "q": "Where are orders listed and revenue computed?",
+ "system": "sieve-vec",
+ "tokens": {
+  "symbols": 78,
+  "semantic": 318,
+  "summary": 90,
+  "memory": 0,
+  "total": 532
+ },
+ "files": [
+  "reports.py",
+  "db.py",
+  "payments.py",
+  "orders.py",
+  "services_search.py"
+ ],
+ "gold": [
+  "db.py",
+  "orders.py",
+  "reports.py"
+ ],
+ "recall": 1.0,
+ "prompt_hash": "1022314b2828",
+ "tokenizer": "tiktoken/cl100k_base"
+}

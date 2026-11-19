@@ -6,6 +6,7 @@ Systems:
   sieve   - BM25 + symbols + graph + summaries + routed budget
   sieve-nosym - sieve minus symbol bonus (ablation)
   sieve-nograph - sieve minus call-graph boost (ablation)
+  sieve-vec - sieve plus the local dense boost (ablation)
 
 Metrics per task (no LLM needed, honest):
   tokens, latency_ms, Recall@k (gold files in top-k?), saving_vs_full_%
@@ -17,6 +18,7 @@ Writes results_eval.csv + traces_eval/*.json
 import csv
 import hashlib
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -41,7 +43,7 @@ TASKS = [
  {"id":"S1","q":"How do notifications send email and sms?","gold":["services_notify.py","logger.py","app.py"]},
 ]
 
-def run_system(name, index, tasks, budget):
+def run_system(name, index, tasks, budget, vectors=None):
     rows = []
     for t in tasks:
         t0 = time.time()
@@ -58,8 +60,9 @@ def run_system(name, index, tasks, budget):
             use_sym = not name.endswith("-nosym")
             use_graph = not name.endswith("-nograph")
             alloc = allocator.allocate(t["q"], budget, index["total_tokens"])
-            ranked, _ = retrieval.hybrid_retrieve(t["q"], index, top_k=5,
-                                                  use_symbols=use_sym, use_graph=use_graph)
+            ranked, _ = retrieval.hybrid_retrieve(
+                t["q"], index, top_k=5, use_symbols=use_sym, use_graph=use_graph,
+                vectors=vectors if name == "sieve-vec" else None)
             prompt, layers = composer.compose(t["q"], index, ranked, alloc, budget)
             files = [c["file"] for _, c in ranked]
         lat = int((time.time()-t0)*1000)
@@ -84,8 +87,19 @@ def main(budget=4000):
     index = index_repo(repo)
     print(f"repo files={len(index['files'])} total_tokens={index['total_tokens']} symbols={len(index['symbols'])} edges={len(index['edges'])}")
     all_rows = []
-    for sys_name in ["full","trunc","sieve","sieve-nosym","sieve-nograph"]:
-        all_rows += run_system(sys_name, index, TASKS, budget)
+    vectors = None
+    if os.getenv("SIEVE_SKIP_EMBEDDINGS") != "1":
+        try:
+            from sieve.embeddings import VectorIndex
+            vectors = VectorIndex().build(index)
+            print(f"vectors dim={vectors.dim} files={len(vectors.files)}")
+        except Exception as exc:
+            print(f"vectors unavailable: {exc}")
+    systems = ["full", "trunc", "sieve", "sieve-nosym", "sieve-nograph"]
+    if vectors is not None:
+        systems.append("sieve-vec")
+    for sys_name in systems:
+        all_rows += run_system(sys_name, index, TASKS, budget, vectors=vectors)
     # functional bug presence (proves tasks are real, not toy pass)
     try:
         import tests_core

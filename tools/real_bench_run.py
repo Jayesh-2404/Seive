@@ -45,7 +45,7 @@ def session_tokens(session_id: str) -> dict:
     if not row:
         return {}
     keys = ["input", "output", "reasoning", "cache_read", "cost"]
-    return dict(zip(keys, row))
+    return dict(zip(keys, row, strict=True))
 
 
 def score(text: str, task: dict) -> tuple[bool, bool]:

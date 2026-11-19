@@ -15,6 +15,8 @@ def hybrid_retrieve(
     top_k: int = 5,
     use_symbols: bool = True,
     use_graph: bool = True,
+    vectors=None,
+    vector_weight: float = 8.0,
 ) -> tuple[list[tuple[float, dict]], dict]:
     """Rank file chunks. Returns [(score, chunk, why)], file-level only."""
     file_chunks = [chunk for chunk in index["chunks"] if chunk["kind"] == "file"]
@@ -41,6 +43,11 @@ def hybrid_retrieve(
             scores[i] += 2.0
         if query_tokens & imports_by_file.get(file, set()):
             scores[i] += 2.0
+
+    if vectors is not None:
+        by_file = dict(zip(vectors.files, vectors.scores(query), strict=False))
+        for i, chunk in enumerate(file_chunks):
+            scores[i] += vector_weight * max(0.0, by_file.get(chunk["file"], 0.0))
 
     # Tests describe runtime code but are not part of the runtime flow.
     for i, chunk in enumerate(file_chunks):

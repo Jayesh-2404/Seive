@@ -20,6 +20,7 @@ from .store import STORE, event_stats, log_event
 
 app = FastAPI(title="Sieve", version=__version__)
 _INDEX: dict = {"root": "", "index": None}
+_VECTORS: dict = {}
 
 
 def _get(repo: str):
@@ -42,6 +43,8 @@ class QueryRequest(BaseModel):
     repo: str = "."
     budget: int = 8000
     top_k: int = 8
+    learned: bool = False
+    vectors: bool = False
 
 
 class ReadRequest(BaseModel):
@@ -78,8 +81,20 @@ def index(request: IndexRequest) -> dict:
 @app.post("/query")
 def query(request: QueryRequest) -> dict:
     root, index_data = _get(request.repo)
-    allocation = allocate(request.task, request.budget, index_data["total_tokens"])
-    ranked, meta = hybrid_retrieve(request.task, index_data, top_k=request.top_k)
+    allocation = allocate(request.task, request.budget, index_data["total_tokens"],
+                          learned=request.learned)
+    vector_index = None
+    if request.vectors:
+        try:
+            if root not in _VECTORS:
+                from .embeddings import VectorIndex
+                _VECTORS[root] = VectorIndex().build(index_data)
+            vector_index = _VECTORS[root]
+        except Exception as exc:
+            raise HTTPException(status_code=400,
+                                detail=f"vectors unavailable: {exc}") from exc
+    ranked, meta = hybrid_retrieve(request.task, index_data,
+                                    top_k=request.top_k, vectors=vector_index)
     prompt, layers = compose(request.task, index_data, ranked, allocation,
                              request.budget)
     log_event("query", index_data["total_tokens"], layers["total"], kind="query")

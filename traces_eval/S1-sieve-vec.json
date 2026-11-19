@@ -1,0 +1,27 @@
+{
+ "task": "S1",
+ "q": "How do notifications send email and sms?",
+ "system": "sieve-vec",
+ "tokens": {
+  "symbols": 79,
+  "semantic": 332,
+  "summary": 90,
+  "memory": 0,
+  "total": 547
+ },
+ "files": [
+  "services_notify.py",
+  "validators.py",
+  "models.py",
+  "app.py",
+  "api.py"
+ ],
+ "gold": [
+  "services_notify.py",
+  "logger.py",
+  "app.py"
+ ],
+ "recall": 0.67,
+ "prompt_hash": "dc528535e7bf",
+ "tokenizer": "tiktoken/cl100k_base"
+}

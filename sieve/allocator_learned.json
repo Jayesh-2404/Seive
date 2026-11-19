@@ -1,0 +1,141 @@
+{
+ "source": "12 eval tasks, 5 candidate splits, in-sample",
+ "tasks": 12,
+ "budget": 600,
+ "splits": {
+  "bug_fix": {
+   "symbols": 0.1,
+   "semantic": 0.7,
+   "summary": 0.1,
+   "memory": 0.1
+  },
+  "question": {
+   "symbols": 0.1,
+   "semantic": 0.7,
+   "summary": 0.1,
+   "memory": 0.1
+  },
+  "feature": {
+   "symbols": 0.1,
+   "semantic": 0.7,
+   "summary": 0.1,
+   "memory": 0.1
+  },
+  "perf": {
+   "symbols": 0.1,
+   "semantic": 0.4,
+   "summary": 0.4,
+   "memory": 0.1
+  }
+ },
+ "report": {
+  "bug_fix": [
+   {
+    "name": "rule",
+    "coverage": 0.667,
+    "tokens": 546.7
+   },
+   {
+    "name": "symbols_heavy",
+    "coverage": 0.667,
+    "tokens": 512.0
+   },
+   {
+    "name": "semantic_heavy",
+    "coverage": 1.0,
+    "tokens": 578.7
+   },
+   {
+    "name": "summary_heavy",
+    "coverage": 0.667,
+    "tokens": 486.7
+   },
+   {
+    "name": "balanced",
+    "coverage": 0.667,
+    "tokens": 546.7
+   }
+  ],
+  "question": [
+   {
+    "name": "rule",
+    "coverage": 0.722,
+    "tokens": 554.2
+   },
+   {
+    "name": "symbols_heavy",
+    "coverage": 0.5,
+    "tokens": 537.3
+   },
+   {
+    "name": "semantic_heavy",
+    "coverage": 0.778,
+    "tokens": 524.7
+   },
+   {
+    "name": "summary_heavy",
+    "coverage": 0.5,
+    "tokens": 522.7
+   },
+   {
+    "name": "balanced",
+    "coverage": 0.722,
+    "tokens": 546.5
+   }
+  ],
+  "feature": [
+   {
+    "name": "rule",
+    "coverage": 0.667,
+    "tokens": 541.0
+   },
+   {
+    "name": "symbols_heavy",
+    "coverage": 0.667,
+    "tokens": 573.5
+   },
+   {
+    "name": "semantic_heavy",
+    "coverage": 0.833,
+    "tokens": 550.5
+   },
+   {
+    "name": "summary_heavy",
+    "coverage": 0.667,
+    "tokens": 562.5
+   },
+   {
+    "name": "balanced",
+    "coverage": 0.667,
+    "tokens": 526.0
+   }
+  ],
+  "perf": [
+   {
+    "name": "rule",
+    "coverage": 0.667,
+    "tokens": 524.0
+   },
+   {
+    "name": "symbols_heavy",
+    "coverage": 0.667,
+    "tokens": 527.0
+   },
+   {
+    "name": "semantic_heavy",
+    "coverage": 0.667,
+    "tokens": 540.0
+   },
+   {
+    "name": "summary_heavy",
+    "coverage": 0.667,
+    "tokens": 524.0
+   },
+   {
+    "name": "balanced",
+    "coverage": 0.667,
+    "tokens": 584.0
+   }
+  ]
+ }
+}
