@@ -85,6 +85,20 @@ The command expands to the index, query, read and compress workflow. The name is
 `sieve`, not `seive`. If the command list does not show it, type `/sie` and it
 appears after the file is reloaded.
 
+The single-step commands are in `.opencode/commands/sieve/` and are installed
+globally too.
+
+| Command | Arguments | Use |
+|---|---|---|
+| `/sieve` | task | full workflow |
+| `/sieve/index` | none | index and report counts |
+| `/sieve/query` | task | prompt, files and layer counts only |
+| `/sieve/read` | file, optional symbol | one file or one symbol |
+| `/sieve/compress` | text | compress noisy output |
+| `/sieve/stats` | none | token savings |
+| `/sieve/symbol` | name | find a definition |
+| `/sieve/original` | ref, optional start and end | recover an original |
+
 ## Reproduce
 
 ```sh

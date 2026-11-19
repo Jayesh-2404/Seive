@@ -138,6 +138,20 @@ the index, query, read and compress workflow above. The project copy is
 `.opencode/commands/sieve.md`; the global copy is
 `~/.config/opencode/commands/sieve.md`. The command name is `sieve`, not `seive`.
 
+The single-step commands are below. They live under
+`.opencode/commands/sieve/` and are installed globally too.
+
+| Command | Use |
+|---|---|
+| `/sieve <task>` | full workflow |
+| `/sieve/index` | index the project and report counts |
+| `/sieve/query <task>` | prompt, files and layer counts only |
+| `/sieve/read <file> [symbol]` | one file or one symbol |
+| `/sieve/compress <text>` | compress noisy output |
+| `/sieve/stats` | token savings |
+| `/sieve/symbol <name>` | find a definition |
+| `/sieve/original <ref> [start] [end]` | recover an original |
+
 ## Measured Results (budget=600, 12 tasks, deterministic)
 | system | avg tokens | Recall@5 | note |
 |---|---|---|---|
