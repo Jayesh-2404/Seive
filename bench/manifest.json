@@ -1,0 +1,185 @@
+{
+ "repo": "C:\\Users\\DELL-1\\Documents\\project\\demo\\agent-activity-dashboard",
+ "budget": 8000,
+ "top_k": 8,
+ "full_tokens": 49412,
+ "tasks": [
+  {
+   "id": "T1",
+   "q": "How does a GitHub repository become a work item in the dashboard queue?",
+   "files": [
+    "src/lib/activity-model.ts"
+   ],
+   "symbols": [
+    "buildWorkItems",
+    "makeWorkItem"
+   ],
+   "sieve_tokens": 5516,
+   "sieve_files": [
+    "src/hooks/use-activity.ts",
+    "src/lib/activity-model.ts",
+    "src/lib/activity-types.ts",
+    "src/lib/github.ts",
+    "src/components/queue-view.tsx",
+    "src/components/work-item.tsx",
+    "src/app/page.tsx",
+    "src/components/welcome.tsx"
+   ],
+   "layers": {
+    "symbols": 1091,
+    "semantic": 4107,
+    "summary": 291,
+    "memory": 0,
+    "total": 5542
+   }
+  },
+  {
+   "id": "T2",
+   "q": "Where does the dashboard fetch GitHub data, and how does the client hook store it?",
+   "files": [
+    "src/app/api/github/dashboard/route.ts",
+    "src/hooks/use-activity.ts"
+   ],
+   "symbols": [
+    "loadRepository",
+    "useActivity"
+   ],
+   "sieve_tokens": 5508,
+   "sieve_files": [
+    "src/hooks/use-activity.ts",
+    "src/components/welcome.tsx",
+    "src/lib/github.ts",
+    "src/app/api/auth/callback/route.ts",
+    "src/app/api/github/dashboard/route.ts",
+    "src/components/repo-history.tsx",
+    "src/components/repo-list.tsx",
+    "src/app/api/github/history/route.ts"
+   ],
+   "layers": {
+    "symbols": 1100,
+    "semantic": 4114,
+    "summary": 267,
+    "memory": 0,
+    "total": 5537
+   }
+  },
+  {
+   "id": "T3",
+   "q": "How does the app discover local Git repositories and read their branch status?",
+   "files": [
+    "src/lib/local-git.ts"
+   ],
+   "symbols": [
+    "parseStatus",
+    "parseConfig"
+   ],
+   "sieve_tokens": 5493,
+   "sieve_files": [
+    "src/hooks/use-activity.ts",
+    "src/app/api/github/dashboard/route.ts",
+    "src/components/repo-list.tsx",
+    "src/app/api/local/repos/route.ts",
+    "src/components/welcome.tsx",
+    "src/lib/local-git.ts",
+    "src/app/api/github/repos/route.ts",
+    "scripts/check-contrast.mjs"
+   ],
+   "layers": {
+    "symbols": 1101,
+    "semantic": 4109,
+    "summary": 255,
+    "memory": 0,
+    "total": 5519
+   }
+  },
+  {
+   "id": "T4",
+   "q": "How are pull request attention states computed and how are work items sorted?",
+   "files": [
+    "src/lib/activity-model.ts"
+   ],
+   "symbols": [
+    "inferAttention",
+    "sortWorkItems"
+   ],
+   "sieve_tokens": 5561,
+   "sieve_files": [
+    "src/lib/activity-model.ts",
+    "src/components/work-item.tsx",
+    "src/lib/format.ts",
+    "src/app/api/github/dashboard/route.ts",
+    "src/hooks/use-activity.ts",
+    "src/lib/activity-types.ts",
+    "src/components/repo-list.tsx",
+    "src/components/queue-view.tsx"
+   ],
+   "layers": {
+    "symbols": 1103,
+    "semantic": 4162,
+    "summary": 268,
+    "memory": 0,
+    "total": 5587
+   }
+  },
+  {
+   "id": "T5",
+   "q": "How does the UI split the queue and render each work item?",
+   "files": [
+    "src/components/queue-view.tsx",
+    "src/components/work-item.tsx"
+   ],
+   "symbols": [
+    "QueueView",
+    "WorkItem"
+   ],
+   "sieve_tokens": 5674,
+   "sieve_files": [
+    "src/components/repo-list.tsx",
+    "src/components/welcome.tsx",
+    "src/hooks/use-activity.ts",
+    "src/components/queue-view.tsx",
+    "src/components/work-item.tsx",
+    "src/app/page.tsx",
+    "src/lib/activity-model.ts",
+    "scripts/check-contrast.mjs"
+   ],
+   "layers": {
+    "symbols": 1105,
+    "semantic": 4258,
+    "summary": 283,
+    "memory": 0,
+    "total": 5699
+   }
+  },
+  {
+   "id": "T6",
+   "q": "How does the repository picker load and select repositories?",
+   "files": [
+    "src/components/repo-list.tsx",
+    "src/components/repo-picker.tsx"
+   ],
+   "symbols": [
+    "RepoList",
+    "RepoPicker"
+   ],
+   "sieve_tokens": 5273,
+   "sieve_files": [
+    "src/components/repo-picker.tsx",
+    "src/hooks/use-activity.ts",
+    "src/app/page.tsx",
+    "src/components/repo-list.tsx",
+    "src/components/welcome.tsx",
+    "src/lib/activity-types.ts",
+    "src/app/api/github/repos/route.ts",
+    "src/app/api/github/dashboard/route.ts"
+   ],
+   "layers": {
+    "symbols": 1097,
+    "semantic": 3865,
+    "summary": 283,
+    "memory": 0,
+    "total": 5295
+   }
+  }
+ ]
+}

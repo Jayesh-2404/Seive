@@ -1,0 +1,24 @@
+{
+ "tag": "r1",
+ "model": "opencode-go/kimi-k2.7-code",
+ "tasks": 6,
+ "arms": {
+  "full": {
+   "success": 6,
+   "points": 12,
+   "max_points": 12,
+   "avg_input": 52530,
+   "avg_output": 615,
+   "avg_reasoning": 386
+  },
+  "sieve": {
+   "success": 6,
+   "points": 12,
+   "max_points": 12,
+   "avg_input": 6869,
+   "avg_output": 536,
+   "avg_reasoning": 539
+  }
+ },
+ "input_reduction_pct": 86.9
+}

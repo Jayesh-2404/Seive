@@ -175,9 +175,13 @@ Same question, same model, no tools, only the attached context differs. Repo is
 
 That is 86.8 percent fewer input tokens at the same answer quality. Numbers come
 from the OpenCode session database. Details and limits: `docs/DEMO_AB.md`.
+A six-task benchmark on the same repository scored 6 of 6 in both arms. Full
+context averaged 52,530 input tokens and Sieve averaged 6,869, which is 86.9
+percent fewer. Details: `docs/REAL_BENCH.md`.
+
 The same repo was also driven through the MCP server, where the agent had no
-filesystem access: one `sieve_index` call and three `sieve_query` calls produced
-the same correct chain.
+filesystem access: one `sieve_index` call, one `sieve_read` call and one
+`sieve_compress` call produced the same correct chain.
 
 ## Read less (input compression)
 The repository context is not the only input. Tool output is often larger.

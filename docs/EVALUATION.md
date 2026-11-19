@@ -22,6 +22,12 @@ Repo `agent-activity-dashboard` at `618610d`, question about the dashboard data 
 Full context 49,412 tokens and 52,508 input tokens. Sieve context 5,516 tokens and 6,926 input tokens. Both scored 6 of 6 on a six-element answer key. That is 86.8% fewer input tokens at parity.
 One run per arm, so this is a pilot. See `docs/DEMO_AB.md`.
 
+## Six-task real benchmark
+Six architecture questions on the same repository, one run per arm, no tools.
+Both arms scored 6 of 6. Full context averaged 52,530 input tokens and Sieve
+averaged 6,869, for 86.9% fewer. The task set is too easy to separate quality,
+which is an honest limit. See `docs/REAL_BENCH.md`.
+
 The product path was tested separately through MCP. With every filesystem tool denied, the agent made one `sieve_index` call and three `sieve_query` calls and produced the same answer chain. Those four steps used 23,442 input tokens and 25,600 cache read, so the totals are not comparable to a one-shot arm.
 
 ## Threats

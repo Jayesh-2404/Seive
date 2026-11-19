@@ -10,6 +10,7 @@ runs today. It is a planning document, not a claim.
 | Tests | 29 pass | `python -m pytest -q` |
 | Retrieval eval | full 1127 / 1.00, trunc 600 / 0.00, Sieve 548 / 0.83 | `python run_eval.py 600` |
 | Real agent A/B | 52,508 vs 6,926 input tokens, 86.8% fewer, 6/6 both | `docs/DEMO_AB.md` |
+| Six-task real benchmark | 6/6 both, 52,530 vs 6,869 avg input, 86.9% fewer | `docs/REAL_BENCH.md` |
 | Input compression | 1,235 to 313, 571 to 120, 37,016 to 296 | `docs/MCP_SESSION.md`, `sieve stats` |
 | MCP | 7 tools, 8 slash commands, live session | `ses-sieve-mcp3`, `opencode mcp list` |
 | Languages | Python, TS, JS, C, C++, Go, Java, Rust | `tests/test_languages.py` |
@@ -29,7 +30,7 @@ Chunks are capped by characters, not tokens.
 | 4 | Budget allocator that predicts the best split and learns | Partial | `allocator.py` is a keyword rule with fixed splits | log 500+ runs, train a model, leave-one-repo-out, compare to rule |
 | 5 | Conversation and trajectory memory for long sessions | Missing in practice | `sieve/memory.py` exists; no call site | wire memory, store decisions, failures, files; compact old turns |
 | 6 | MCP service | Done | `sieve/server/mcp.py`, 7 tools, 8 commands, `ses-sieve-mcp3` | packaging and installer |
-| 7 | Benchmark of token cost, latency and task success with vs without | Partial | 12 tasks x 5 systems, Recall@5; one-question A/B; one MCP session | real-repo task benchmark with reps, success scoring and cost |
+| 7 | Benchmark of token cost, latency and task success with vs without | Partial, improved | 12-task retrieval eval; 6-task real benchmark with 6/6 both and 86.9% fewer input tokens; one MCP session | harder task set with patches and tests, 3 reps, cost, multi-repo |
 
 The synopsis also promises FastAPI over PostgreSQL/pgvector, a Dockerized stack,
 GitHub Actions, and an allocator that learns from repeated runs. None of those
@@ -43,6 +44,9 @@ are built.
    latency, cost and success. Acceptance: a committed CSV and trace per run,
    plus a table with success and token deltas. This is the biggest gap. Recall@5
    is a proxy, not task success.
+   Progress: six tasks on the Next.js repo scored 6 of 6 in both arms, with
+   52,530 versus 6,869 average input tokens. Remaining: 20+ tasks, 3 reps,
+   patches and tests for real task success, and cost.
 2. **Normal-agent A/B.** The current A/B uses a no-tools agent. Add a normal
    agent with file tools, with and without the Sieve MCP server, on the same
    tasks. Acceptance: a paired table of input tokens, tool calls and success.
@@ -111,7 +115,7 @@ are built.
 
 | Work | One person, focused |
 |---|---|
-| Real task benchmark | 3 to 5 days |
+| Real task benchmark | 2 to 4 days (extend the six-task set) |
 | Learned allocator | 3 to 4 days |
 | Normal-agent A/B | 1 to 2 days |
 | Embeddings and vector store | 3 to 4 days |

@@ -6,7 +6,7 @@
 3. Open `traces_eval/B1-sieve.json`. Show files, tokens per layer, tokenizer and prompt hash.
    Say "Every decision is traced, not a black box."
 4. Compare `traces_eval/B1-trunc.json` with `B1-sieve.json`. Truncation loses auth.py. Sieve keeps it.
-5. A/B: show the table in `docs/DEMO_AB.md`. Full context 49,412 tokens and 52,508 input tokens. Sieve 5,516 and 6,926. Same 6 of 6 answer key. 86.8 percent fewer input tokens.
+5. A/B: show the table in `docs/DEMO_AB.md`. Full context 49,412 tokens and 52,508 input tokens. Sieve 5,516 and 6,926. Same 6 of 6 answer key. 86.8 percent fewer input tokens. Then show the six-task benchmark: 6 of 6 both, 52,530 versus 6,869 average input, 86.9 percent fewer.
 6. Read less: `sieve read auth.py --repo sample_repo_large --symbol check_auth --budget 200 --json` shows 131 to 31 tokens. `sieve compress` on the 37,016 token log shows 296. `sieve stats` totals the savings.
 7. MCP: `opencode mcp list` shows `sieve connected`. The recorded session `ses-sieve-mcp3` called `sieve_index`, `sieve_read` and `sieve_compress` with no filesystem access, then gave the correct chain.
 8. Close with the limits. One run per arm, one model, one repository. Compression is lossy and keeps originals. Bugs reproduce. The allocator is rule-based. Non-Python call graphs are not extracted.

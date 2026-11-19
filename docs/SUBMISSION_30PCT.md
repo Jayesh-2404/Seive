@@ -50,6 +50,10 @@ driven through the MCP server with every filesystem tool denied. The agent made
 one `sieve_index` call, one `sieve_read` call and one `sieve_compress` call and
 produced the same chain. Details and limits in `docs/DEMO_AB.md`.
 
+A six-task benchmark on the same repository scored 6 of 6 in both arms. Full
+context averaged 52,530 input tokens and Sieve averaged 6,869, for 86.9% fewer.
+The full answers and the per-task CSV are in `docs/REAL_BENCH.md` and `bench/`.
+
 ### 2c. Read less (input compression)
 | input | before | after | saved |
 |---|---|---|---|

@@ -7,3 +7,5 @@ node_modules/
 build/
 dist/
 .audit/
+bench/*/*/context.md
+bench/*/*/.opencode/
