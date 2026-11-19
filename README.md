@@ -228,6 +228,12 @@ A six-task benchmark on the same repository scored 6 of 6 in both arms. Full
 context averaged 52,530 input tokens and Sieve averaged 6,869, which is 86.9
 percent fewer. Details: `docs/REAL_BENCH.md`.
 
+A separate three-session run used real OpenCode agents with file tools. Guided
+Sieve used 44,135 input tokens against 114,968 for the combined control, 61.6
+percent fewer, while the plain Sieve arm ignored the MCP and was the cheapest
+run at 47,357 input. Full report, dashboard and flow diagram:
+`experiments/agent-activity-dashboard-ab/`.
+
 The same repo was also driven through the MCP server, where the agent had no
 filesystem access: one `sieve_index` call, one `sieve_read` call and one
 `sieve_compress` call produced the same correct chain.
