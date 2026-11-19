@@ -41,3 +41,19 @@ class Memory:
 
     def notes(self) -> str:
         return self.notes_file.read_text(encoding="utf-8")[:1000]
+
+    def compact(self, keep: int = 4) -> list[dict]:
+        """Keep the last turns verbatim and collapse older ones to a state line."""
+        turns = self.recent(max(keep + 20, keep))
+        if len(turns) <= keep:
+            return turns
+        older = turns[:-keep]
+        files = sorted({name for turn in older for name in turn.get("files", [])})
+        summary = {
+            "q": f"{len(older)} earlier turns",
+            "files": files[:8],
+            "success": None,
+            "note": (f"{len(older)} earlier turns; files: "
+                     f"{', '.join(files[:8]) or '-'}"),
+        }
+        return [summary] + turns[-keep:]

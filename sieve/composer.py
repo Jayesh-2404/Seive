@@ -6,19 +6,15 @@ last thing removed because they are the map an agent needs to ask a better
 question.
 """
 from . import tokenizer
-from .config import MEMORY_TURNS, SUMMARY_CALLEES, SUMMARY_FILES
+from .config import MEMORY_TURNS, SUMMARY_FILES
 from .models import Allocation, Layers, RepositoryIndex
+from .summarize import summarize_file as summarize_entry
 
 MEMORY_HEADER = "[MEMORY]"
 
 
 def summarize_file(entry: dict, index: RepositoryIndex) -> str:
-    names = [symbol["symbol"] for symbol in index["symbols"]
-             if symbol["file"] == entry["file"]][:8]
-    callees = sorted({edge["callee"] for edge in index["edges"]
-                      if edge["file"] == entry["file"]})[:SUMMARY_CALLEES]
-    return (f'{entry["file"]}: defines {", ".join(names) or "-"} '
-            f'({entry["tokens"]} toks) | calls {", ".join(callees) or "-"}')
+    return summarize_entry(entry, index)
 
 
 def _assemble(query: str, alloc: Allocation, sym_text: str, sem_parts: list[str],

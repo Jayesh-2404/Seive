@@ -31,7 +31,7 @@ sieve-serve = "sieve.http_server:run"
 include = ["sieve*"]
 
 [tool.setuptools.package-data]
-sieve = ["allocator_learned.json"]
+sieve = ["allocator_learned.json", "templates/commands/*.md", "templates/commands/sieve/*.md"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

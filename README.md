@@ -43,8 +43,11 @@ sieve/
   memory.py               turns.jsonl + notes.md
   compress.py             budgeted compression for logs, tests, JSON, CSV
   read.py                 symbol-aware file reads
+  summarize.py            extractive default, optional external model, identifier check
   store.py                original text store and tool event log
-  cli.py                  sieve index / query / read / compress / original / stats / mcp
+  install.py              writes the global MCP server and /sieve commands
+  templates/commands/     command templates copied by `sieve init`
+  cli.py                  sieve index / query / read / compress / original / stats / memory / summarize / mcp / init
   parse/
     profiles.py           extension to language mapping
     python_ast.py         Python AST symbols, imports, calls
@@ -92,6 +95,11 @@ key is needed for the retrieval eval. The OpenCode A/B needs an OpenCode
 provider login.
 
 ## How to Run
+Install the CLI, the global MCP server and the `/sieve` commands:
+```
+pip install -e .
+sieve init
+```
 Generate demo repo:
 ```
 python tools/build_large_repo.py
@@ -137,10 +145,12 @@ MCP check. Install the package, then configure the server in the project:
 ```
 `opencode mcp list` then shows `✓ sieve connected`. OpenCode exposes
 `sieve_index`, `sieve_query`, `sieve_read`, `sieve_compress`, `sieve_original`,
-`sieve_symbol`, `sieve_stats` and `sieve_memory`. With `codemode: false` the
-tools appear with those names. Under the default Code Mode they are grouped as
-`tools.sieve.index` and so on. The server is also available as `sieve-mcp` or
-`python -m sieve.mcp_server` for any other MCP client.
+`sieve_symbol`, `sieve_stats`, `sieve_memory` and `sieve_summarize`. With
+`codemode: false` the tools appear with those names. Under the default Code Mode
+they are grouped as `tools.sieve.index` and so on. The server is also available
+as `sieve-mcp` or `python -m sieve.mcp_server` for any other MCP client.
+
+`sieve init` writes this config and the commands for you. See `docs/INSTALL.md`.
 
 A `/sieve` command is included. Run `/sieve <task>` in OpenCode. It expands to
 the index, query, read and compress workflow above. The project copy is
@@ -167,6 +177,7 @@ The single-step commands are below. They live under
 | `/sieve/compress <text>` | compress noisy output |
 | `/sieve/stats` | token savings |
 | `/sieve/memory [note]` | show or record conversation memory |
+| `/sieve/summarize <file> [max]` | summarize one file |
 | `/sieve/symbol <name>` | find a definition |
 | `/sieve/original <ref> [start] [end]` | recover an original |
 
@@ -229,6 +240,12 @@ A trace-fitted split table is available with `--learned` or `learned=true`. It
 is an in-sample grid search on the 12 tasks, not a trained model. The details
 and the weak evidence are in `docs/ALLOCATOR.md`. The default remains the rule
 split, so the measured A/B and eval do not move.
+
+The summary layer is extractive by default. Set `SIEVE_SUMMARY_CMD` to a command
+that reads a prompt and writes text to enable an external model. Backticked
+identifiers are checked against the source and symbol list, and a failed check
+falls back to the extractive line. No live model was run here, so LLM summary
+quality is unmeasured. See `docs/SUMMARIZER.md`.
 
 Bug presence in `sample_repo_large/tests_core.py`: t_b1, t_b2, t_b3 all False
 (bugs reproduce, honest baseline). End-to-end LLM fix rate is marked as
@@ -310,9 +327,11 @@ ms locally to halve input tokens is the full trade.
 - `sieve/composer.py`: prompt assembly with hard ceiling enforcement.
 - `sieve/compress.py`: budgeted compression for noisy tool output.
 - `sieve/read.py`: symbol-aware file reads.
+- `sieve/summarize.py`: extractive default, optional external model, identifier check.
 - `sieve/store.py`: originals and the token event log.
-- `sieve/memory.py`: conversation store stub.
-- `sieve/server/mcp.py`: MCP server with `index`, `query`, `read`, `compress`, `original`, `symbol`, `stats`.
+- `sieve/memory.py`: conversation store and simple compaction.
+- `sieve/install.py`: writes the global MCP server and the `/sieve` commands.
+- `sieve/server/mcp.py`: MCP server with `index`, `query`, `read`, `compress`, `original`, `symbol`, `stats`, `memory`, `summarize`.
 - `sieve/cli.py`: the same operations from a terminal.
 - `run_eval.py`: baselines, ablations, metrics, traces.
 
@@ -329,7 +348,8 @@ ms locally to halve input tokens is the full trade.
 - Docker is not installed on the development machine, so the image is not built there. CI is written but not run against a remote.
 
 ## Next Milestones
-1. LLM summarizer with identifier-preservation check.
+1. LLM summarizer with identifier-preservation check. The interface, identifier
+   check and external-provider hook are in place; a live run and a cost table remain.
 2. LLM fix-rate eval with pinned model, temp=0, cost tracking.
 3. Learned allocator trained on collected logs, leave-one-repo-out test. The in-sample split table is in place.
 4. pgvector + RRF fusion, ablated against BM25. The local dense index and its negative result are in place.

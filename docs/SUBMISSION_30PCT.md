@@ -17,7 +17,10 @@ sieve/compress.py           -> budgeted compression for logs, tests, JSON, CSV, 
 sieve/read.py               -> symbol-aware file reads
 sieve/store.py              -> original text store and token event log
 sieve/memory.py             -> persistent notes and recent turns, wired into query
-sieve/server/mcp.py         -> MCP: index, query, read, compress, original, symbol, stats, memory
+sieve/summarize.py          -> extractive default, optional external model, identifier check
+sieve/install.py            -> writes the global MCP server and /sieve commands
+sieve/templates/commands/   -> command templates copied by `sieve init`
+sieve/server/mcp.py         -> MCP: index, query, read, compress, original, symbol, stats, memory, summarize
 sieve/http_server.py        -> FastAPI adapter over the same engine
 Dockerfile                  -> HTTP service image
 .github/workflows/ci.yml    -> lint, tests, eval, HTTP import
@@ -25,7 +28,7 @@ sieve/cli.py                -> the same operations from a terminal
 run_eval.py                 -> 12 tasks x 5 systems, Recall@5 + tokens + latency + traces
 tools/ab_build.py           -> builds the full-context and Sieve arms for an OpenCode A/B
 tools/fit_allocator.py      -> grid-searches splits and writes allocator_learned.json
-tests/                      -> 38 tests: ceiling, languages, compression, reads, HTTP, vectors, memory, MCP
+tests/                      -> 45 tests: ceiling, languages, compression, reads, HTTP, vectors, memory, summarize, install, MCP
 tools/build_large_repo.py   -> 18-file demo repo with 3 known bugs
 ```
 
@@ -80,9 +83,10 @@ Every original is kept in `~/.sieve/originals` and comes back with
 5. **Budgeted compression**: kind detection, keep errors, paths and counts, collapse repeated lines, pack head and tail to a token budget, keep the original by content hash.
 6. **Dense fusion**: optional local fastembed vectors, 384 dimensions, added as a cosine boost to the BM25 and structure score. Ablated as `sieve-vec`.
 7. **Trace-fitted split**: a grid search over five candidate splits on 12 tasks, written to `allocator_learned.json` and used only with `--learned`.
+8. **Summary validation**: an optional external model writes a summary, every backticked identifier is checked against the source and symbol list, and a failed check falls back to the extractive line.
 
 ## 4. What is NOT done (next 70%)
-- LLM summarizer (currently extractive one-liners preserving identifiers)
+- LLM summarizer (the interface, identifier check and external-provider hook exist, but no live model was run)
 - Learned allocator (an in-sample split table exists, not a trained model)
 - pgvector / RRF (a local dense index exists, but it did not improve this set)
 - Docker image build and a remote CI run are not verified on this machine
@@ -102,9 +106,13 @@ sieve compress noisy.log --budget 300 --json
 sieve memory --note "decision: keep the six-task benchmark"
 sieve query "fix the token check" --vectors
 sieve query "fix the token check" --learned
+sieve summarize auth.py --repo sample_repo_large --json
+sieve init
 sieve stats
 sieve-serve
 ```
+Set `SIEVE_SUMMARY_CMD` to a command that reads a prompt and writes text to
+enable the external summary model. Without it, the extractive line is used.
 The HTTP service exposes `/health`, `/index`, `/query`, `/read`, `/compress`,
 `/stats` and `/original/{ref}`. A live check returned 18 files for the demo repo
 and a 538 token query under the 600 budget.
@@ -123,4 +131,5 @@ A/B demo: `python tools/ab_build.py <repo> <out_dir> 8000`, then the two
 - `sieve/retrieval/bm25.py`, `sieve/parse/treesitter.py`, `sieve/compress.py`, `sieve/server/mcp.py`, `sieve/http_server.py`
 - `Dockerfile`, `.github/workflows/ci.yml`
 - `docs/DEMO_AB.md`, `docs/MCP_SESSION.md`, `docs/REAL_BENCH.md`, `docs/EMBEDDINGS.md`, `docs/ALLOCATOR.md`
+- `docs/SUMMARIZER.md`, `docs/INSTALL.md`
 - `docs/AB_ANSWER_run-a.md`, `docs/AB_ANSWER_run-b.md`

@@ -24,6 +24,7 @@ from ..models import RepositoryIndex
 from ..read import read_file
 from ..retrieval import hybrid_retrieve
 from ..store import STORE, cache_root, event_stats, log_event
+from ..summarize import default_provider, summarize_file
 
 INDEX_TTL_SECONDS = 30.0
 
@@ -112,7 +113,7 @@ def sieve_query(task: str, budget: int = DEFAULT_BUDGET,
             return {"error": f"vectors unavailable: {exc}"}
     ranked, meta = hybrid_retrieve(task, index, top_k=top_k, vectors=vector_index)
     prompt, layers = compose(task, index, ranked, allocation, budget,
-                             memory_turns=_memory.recent(4))
+                             memory_turns=_memory.compact(4))
     files = [chunk["file"] for _, chunk in ranked]
     _memory.log(task, files, note=f"query: {task[:120]}")
     log_event("query", index["total_tokens"], layers["total"], kind="query")
@@ -181,6 +182,22 @@ def sieve_memory(note: str = "") -> dict:
     if note.strip():
         _memory.log(note, [], note=note)
     return {"notes": _memory.notes(), "recent": _memory.recent(5)}
+
+
+@server.tool(name="summarize")
+def sieve_summarize(file: str, max_tokens: int = 120) -> dict:
+    """Summarize one indexed file. Uses SIEVE_SUMMARY_CMD if set, else extractive."""
+    try:
+        _, index = _ensure()
+    except Exception as exc:
+        return {"error": str(exc)}
+    rel = file.replace("\\", "/").lstrip("/")
+    entry = next((item for item in index["files"] if item["file"] == rel), None)
+    if entry is None:
+        return {"error": f"{rel} is not in the index"}
+    summary = summarize_file(entry, index, max_tokens=max_tokens)
+    return {"file": rel, "summary": summary,
+            "provider": bool(default_provider())}
 
 
 def main() -> None:

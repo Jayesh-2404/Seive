@@ -15,6 +15,7 @@ from .memory import Memory
 from .read import read_file
 from .retrieval import hybrid_retrieve
 from .store import STORE, cache_root, event_stats, log_event
+from .summarize import default_provider, summarize_file
 
 
 def _read_input(path: str) -> str:
@@ -55,6 +56,12 @@ def main(argv: list[str] | None = None) -> int:
     read_parser.add_argument("--budget", type=int, default=1200)
     read_parser.add_argument("--json", action="store_true")
 
+    summarize_parser = subparsers.add_parser("summarize", help="summarize one file")
+    summarize_parser.add_argument("file")
+    summarize_parser.add_argument("--repo", default=".")
+    summarize_parser.add_argument("--max-tokens", type=int, default=120)
+    summarize_parser.add_argument("--json", action="store_true")
+
     compress_parser = subparsers.add_parser("compress", help="compress tool output")
     compress_parser.add_argument("path", nargs="?", default="-")
     compress_parser.add_argument("--kind", default="auto")
@@ -68,6 +75,10 @@ def main(argv: list[str] | None = None) -> int:
 
     subparsers.add_parser("stats", help="show recorded token savings")
 
+    init_parser = subparsers.add_parser("init", help="install the MCP server and commands")
+    init_parser.add_argument("--dry-run", action="store_true")
+    init_parser.add_argument("--force", action="store_true")
+
     memory_parser = subparsers.add_parser("memory", help="show or record memory")
     memory_parser.add_argument("--note", default="")
     memory_parser.add_argument("--limit", type=int, default=5)
@@ -79,6 +90,11 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "mcp":
         from .server.mcp import main as run_server
         run_server()
+        return 0
+
+    if args.command == "init":
+        from .install import init
+        print(json.dumps(init(dry_run=args.dry_run, force=args.force), indent=2))
         return 0
 
     if args.command == "memory":
@@ -133,6 +149,22 @@ def main(argv: list[str] | None = None) -> int:
         log_event("read", result["tokens_before"], result["tokens_after"],
                   kind=result["kind"], ref=result["ref"])
         print(json.dumps(result, indent=2) if args.json else result["text"])
+        return 0
+
+    if args.command == "summarize":
+        try:
+            rel = _relative(root, args.file)
+        except ValueError as exc:
+            print(json.dumps({"error": str(exc)}))
+            return 1
+        entry = next((item for item in index["files"] if item["file"] == rel), None)
+        if entry is None:
+            print(json.dumps({"error": f"{rel} is not in the index"}))
+            return 1
+        summary = summarize_file(entry, index, max_tokens=args.max_tokens)
+        payload = {"file": rel, "summary": summary,
+                   "provider": bool(default_provider())}
+        print(json.dumps(payload, indent=2) if args.json else summary)
         return 0
 
     allocation = allocate(args.task, args.budget, index["total_tokens"],
