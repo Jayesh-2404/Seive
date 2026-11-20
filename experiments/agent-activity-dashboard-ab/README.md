@@ -26,6 +26,12 @@ The control row is the parent session plus its `explore` child session.
 
 Guided Sieve used 61.6% fewer non-cached input tokens than the control and 39.0% fewer total prompt tokens. The plain Sieve run was still the cheapest at 200,445 total prompt, because it took 6 steps and never called Sieve.
 
+## Cost proof from OpenCode Console
+
+![OpenCode Console request cost](opencode-console-cost.png)
+
+The OpenCode Console records a dollar cost for every inference request. The captured request is a Console-routed `deepseek-v4.1-flash` call at `$0.00087`. The A/B sessions used `opencode-go/kimi-k2.7-code`, and `session_v2` reports cost `0.0` for them, so this image proves the Console's cost surface, not the A/B total. Personal identifiers are redacted.
+
 ## Plain vs guided
 
 The connection was identical. Plain Sieve only got the question and used native reads. Guided Sieve got the workflow and made 23 Sieve calls. The extra steps made guided 80.5% more expensive in total prompt than plain, while still 39.0% below the control. The MCP alone changed nothing.
@@ -46,6 +52,7 @@ Local commit history is read live from the checkout on each dashboard request. `
 - `local-history-flow.excalidraw`
 - `local-history-flow.png`
 - `dashboard-preview.png`
+- `opencode-console-cost.png`
 
 ## Caveats
 
